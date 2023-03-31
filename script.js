@@ -89,6 +89,13 @@ function handleProjectiles(){
     for (let i = 0; i < projectiles.length; i++){
         projectiles[i].update();
         projectiles[i].draw();
+        for (let j = 0; j < enemies.length; j++){
+            if (enemies[j] && projectiles[i] && collision(projectiles[i], enemies[j])){
+                enemies[j].health -= projectiles[i].dmg;
+                projectiles.splice(i, 1);
+                i--;
+            }
+        }
         if (projectiles[i] && projectiles[i].x > canvas.width - cellSize){
             projectiles.splice(i, 1);
             i--;
@@ -103,7 +110,7 @@ class Unit {
         this.y = y;
         this.width = cellSize;
         this.height = cellSize;
-        this.shooting = false;
+        this.shooting = true;
         this.health = 100;
         this.timer = 0;
     }
@@ -114,9 +121,17 @@ class Unit {
     }
     update(){
         this.timer++;
-        if (this.timer % 100 == 0){
-            projectiles.push(new Projectile(this.x + cellSize, this.y + 50));
+        if (this.shooting){
+            for (let i = 0; i < enemyVert.length; i++){
+                if (this.y == enemyVert[i]){
+                    if (this.timer % 100 == 0){
+                        projectiles.push(new Projectile(this.x + cellSize, this.y + 50));
+                    }
+                }
+            }
         }
+        
+        
     }
 }
 canvas.addEventListener('click', function(){
@@ -179,6 +194,13 @@ function handleEnemies(){
         enemies[i].draw();
         if (enemies[i].x < 0){
             endGame = true;
+        }
+        if (enemies[i].health <= 0){
+            money += enemies[i].maxHealth/10;
+            const myIndex = enemyVert.indexOf(enemies[i].y);
+            enemyVert.splice(myIndex, 1);
+            enemies.splice(i, 1);
+            i--;
         }
     }
     if (frame % 100 == 0){
