@@ -15,6 +15,7 @@ let money = 300;
 let frame = 0;
 let interval = 600;
 let endGame = false;
+let score = 0;
 // mouse
 const mouse = {
     x: 10,
@@ -200,6 +201,7 @@ function handleEnemies(){
             const myIndex = enemyVert.indexOf(enemies[i].y);
             enemyVert.splice(myIndex, 1);
             enemies.splice(i, 1);
+            score += enemies[i].maxHealth;
             i--;
         }
     }
