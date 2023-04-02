@@ -199,9 +199,9 @@ function handleEnemies(){
         if (enemies[i].health <= 0){
             money += enemies[i].maxHealth/10;
             const myIndex = enemyVert.indexOf(enemies[i].y);
+            score += enemies[i].maxHealth;
             enemyVert.splice(myIndex, 1);
             enemies.splice(i, 1);
-            score += enemies[i].maxHealth;
             i--;
         }
     }
