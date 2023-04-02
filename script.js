@@ -221,6 +221,7 @@ function printStuff(color, font_and_size, message, x, y){
 }
 
 function handleGameStatus(){
+    printStuff('gold', '30px Arial', 'Score ' + score, 300, 55);
     printStuff('gold', '30px Arial', 'Resources ' + money, 20, 55);
     if (endGame){
         printStuff('black', '90px Arial', 'Game OVER', 135, 330);
