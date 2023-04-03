@@ -1,15 +1,21 @@
 const element = document.getElementById("u1");
 
 function myFunction() {
-  var name;
+  var name = "";
   do {
     name = prompt("Enter Username", "");
-  } while (name.length < 4 || name.length > 20);
+    console.log(name.length);
+  } while (
+    name.length < 4 ||
+    name.length > 20 ||
+    !isNaN(name) ||
+    name === null
+  );
   console.log(name.length);
   element.innerHTML = "The Current User is: " + name;
   console.log(name);
 
-  fetch(`${window.origin}/`, {
+  fetch(`${window.origin}/game`, {
     method: "POST",
     credentials: "include",
     body: JSON.stringify(name),
