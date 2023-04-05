@@ -11,11 +11,13 @@ const units = [];
 const enemies = [];
 const enemyVert = [];
 const projectiles = [];
+const resources = [];
 let money = 300;
 let frame = 0;
 let interval = 600;
 let endGame = false;
 let score = 0;
+const winningScore = 100;
 // mouse
 const mouse = {
     x: 10,
@@ -126,7 +128,7 @@ class Unit {
             for (let i = 0; i < enemyVert.length; i++){
                 if (this.y == enemyVert[i]){
                     if (this.timer % 100 == 0){
-                        projectiles.push(new Projectile(this.x + cellSize, this.y + 50));
+                        projectiles.push(new Projectile(this.x, this.y + 50));
                     }
                 }
             }
@@ -176,7 +178,7 @@ class Enemy {
         this.height = cellSize;
         this.health = 100;
         this.timer = 0;
-        this.speed = Math.random()* 0.2 + 1;
+        this.speed = Math.random()* 0.2 + 0.5;
         this.movement = this.speed;
         this.maxHealth = this.health;
     }
@@ -198,14 +200,14 @@ function handleEnemies(){
         }
         if (enemies[i].health <= 0){
             money += enemies[i].maxHealth/10;
+            score += enemies[i].maxHealth/10;
             const myIndex = enemyVert.indexOf(enemies[i].y);
-            score += enemies[i].maxHealth;
             enemyVert.splice(myIndex, 1);
             enemies.splice(i, 1);
             i--;
         }
     }
-    if (frame % 100 == 0){
+    if (frame % 200 == 0 && score < winningScore){
         let vert = Math.floor(Math.random() * 5 + 1) * cellSize;
         enemies.push(new Enemy(vert));
         enemyVert.push(vert);
@@ -213,6 +215,35 @@ function handleEnemies(){
     }
 }
 //recourses
+const amounts = [20, 30, 40];
+class Resource {
+    constructor(){
+        this.x = Math.random() * (canvas.width - cellSize);
+        this.y = (Math.floor(Math.random() * 5) + 1) * cellSize + 25;
+        this.width = cellSize * 0.5;
+        this.height = cellSize * 0.5;
+        this.amount = amounts[Math.floor(Math.random() * amounts.length)];
+    }
+    draw(){
+        ctx.fillStyle = 'yellow';
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        printStuff("black", "20px Arial", this.amount, this.x + 15, this.y + 25);
+    }
+}
+function handleResources(){
+    if (frame % 500 == 0 && frame != 0 && score < winningScore){
+        resources.push(new Resource());
+    }
+    for (let i = 0; i < resources.length; i++){
+        resources[i].draw();
+        if (resources[i] && mouse.x && mouse.y && collision(resources[i], mouse)){
+            money += resources[i].amount;
+            resources.splice(i, 1);
+            i--;
+        }
+    }
+}
+
 //utilities
 function printStuff(color, font_and_size, message, x, y){
     ctx.fillStyle = color;
@@ -221,10 +252,14 @@ function printStuff(color, font_and_size, message, x, y){
 }
 
 function handleGameStatus(){
-    printStuff('gold', '30px Arial', 'Score ' + score, 300, 55);
     printStuff('gold', '30px Arial', 'Resources ' + money, 20, 55);
+    printStuff('gold', '30px Arial', 'Score ' + score, 300, 55);
     if (endGame){
         printStuff('black', '90px Arial', 'Game OVER', 135, 330);
+    }
+    if (score >= winningScore && enemies.length == 0){
+        printStuff("black", '60px Arial', "LEVEL COMPLETE", 130, 300);
+        printStuff("black", '30px Arial', "You win with " + score + ' points! ', 135, 340);
     }
 }
 
@@ -234,6 +269,7 @@ function animate(){
     ctx.fillRect(0,0, controlsBar.width, controlsBar.height);
     handleGameGrid();
     handleUnits();
+    handleResources();
     handleProjectiles();
     handleEnemies();
     handleGameStatus();
@@ -251,3 +287,7 @@ function collision(first, second){
         return true;
     };
 };
+
+window.addEventListener('resize', function(){
+    canvasPosition = canvas.getBoundingClientRect();
+})
