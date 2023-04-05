@@ -137,20 +137,6 @@ class Unit {
         
     }
 }
-canvas.addEventListener('click', function(){
-    const gridPositionX = mouse.x - (mouse.x % cellSize);
-    const gridPositionY = mouse.y - (mouse.y % cellSize);
-    if (gridPositionY < cellSize) return;
-    for (let i=0; i < units.length; i++){
-        if(units[i].x == gridPositionX && units[i].y == gridPositionY) 
-        return;
-    }
-    let UnitCost = 100;
-    if(money >= UnitCost){
-        units.push(new Unit(gridPositionX,gridPositionY));
-        money -= UnitCost;
-    }
-});
 function handleUnits(){
     for (let i=0; i < units.length; i++){
         units[i].draw();
@@ -165,6 +151,39 @@ function handleUnits(){
                 i--;
                 enemies[j].movement = enemies[j].speed;
             }
+        }
+    }
+}
+// Floating Messages
+const floatingMessages = [];
+class floatingMessage{
+    constructor(value, x, y, size, color){
+        this.value = value;
+        this.x = x;
+        this.y = y;
+        this.size = size;
+        this.lifespan = 0;
+        this.color = color;
+        this.opacity = 1;
+    }
+    update(){
+        this.y -= 0.3;
+        this.lifespan += 1;
+        if (this.opacity > 0.01) this.opacity -= 0.01;
+    }
+    draw(){
+        ctx.globalAlpha = this.opacity;
+        printStuff(this.color, this.size + 'px Arial', this.value, this.x, this.y);
+        ctx.globalAlpha = 1;
+    }
+}
+function handleFloatingMessages(){
+    for (let i = 0; i < floatingMessages.length; i++){
+        floatingMessages[i].update();
+        floatingMessages[i].draw();
+        if (floatingMessages[i] && floatingMessages[i].lifespan >= 50){
+            floatingMessages.splice(i, 1);
+            i--;
         }
     }
 }
@@ -238,6 +257,8 @@ function handleResources(){
         resources[i].draw();
         if (resources[i] && mouse.x && mouse.y && collision(resources[i], mouse)){
             money += resources[i].amount;
+            floatingMessages.push(new floatingMessage('+' + resources[i].amount, resources[i].x, resources[i].y, 30, 'black'))
+            floatingMessages.push(new floatingMessage('+' + resources[i].amount, 250, 80, 30, 'gold'));
             resources.splice(i, 1);
             i--;
         }
@@ -252,8 +273,8 @@ function printStuff(color, font_and_size, message, x, y){
 }
 
 function handleGameStatus(){
-    printStuff('gold', '30px Arial', 'Resources ' + money, 20, 55);
-    printStuff('gold', '30px Arial', 'Score ' + score, 300, 55);
+    printStuff('gold', '30px Arial', 'Resources: ' + money, 20, 80);
+    printStuff('gold', '30px Arial', 'Score: ' + score, 20, 30);
     if (endGame){
         printStuff('black', '90px Arial', 'Game OVER', 135, 330);
     }
@@ -262,6 +283,23 @@ function handleGameStatus(){
         printStuff("black", '30px Arial', "You win with " + score + ' points! ', 135, 340);
     }
 }
+
+canvas.addEventListener('click', function(){
+    const gridPositionX = mouse.x - (mouse.x % cellSize);
+    const gridPositionY = mouse.y - (mouse.y % cellSize);
+    if (gridPositionY < cellSize) return;
+    for (let i=0; i < units.length; i++){
+        if(units[i].x == gridPositionX && units[i].y == gridPositionY) 
+        return;
+    }
+    let UnitCost = 100;
+    if(money >= UnitCost){
+        units.push(new Unit(gridPositionX,gridPositionY));
+        money -= UnitCost;
+    } else{
+        floatingMessages.push(new floatingMessage("need more resources", mouse.x, mouse.y, 20, "blue"));
+    }
+});
 
 function animate(){
     ctx.clearRect(0,0,canvas.width, canvas.height);
@@ -273,6 +311,7 @@ function animate(){
     handleProjectiles();
     handleEnemies();
     handleGameStatus();
+    handleFloatingMessages();
     frame++;
     if (!endGame) requestAnimationFrame(animate);
 }
