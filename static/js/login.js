@@ -12,7 +12,7 @@ function myFunction() {
     name === null
   );
   console.log(name.length);
-  element.innerHTML = "The Current User is: " + name;
+  element.innerHTML = name;
   console.log(name);
 
   fetch(`${window.origin}/game`, {
