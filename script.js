@@ -17,6 +17,7 @@ let frame = 0;
 let interval = 600;
 let endGame = false;
 let score = 0;
+let level = 1;
 const winningScore = 100;
 // mouse
 const mouse = {
@@ -143,7 +144,7 @@ function handleUnits(){
         units[i].update();
         for (let j = 0; j < enemies.length; j++){
             if (units[i] && collision(units[i], enemies[j])){
-                units[i].health -= 0.2;
+                units[i].health -= enemies[j].dmg;
                 enemies[j].movement = 0;
             }
             if (units[i] && units[i].health <= 0){
@@ -189,10 +190,15 @@ function handleFloatingMessages(){
 }
 
 //enemies
+const enemyTypes = [];
+const enemy1 = new Image();
+enemy1.src = 'enemy1.png';
+enemyTypes.push(enemy1);
 class Enemy {
     constructor(vert){
         this.x = canvas.width;
         this.y = vert;
+        this.dmg = 0.2;
         this.width = cellSize;
         this.height = cellSize;
         this.health = 100;
@@ -200,14 +206,28 @@ class Enemy {
         this.speed = Math.random()* 0.2 + 0.5;
         this.movement = this.speed;
         this.maxHealth = this.health;
+        this.enemyType = enemyTypes[0];
+        this.frameX = 0;
+        this.frameY = 0;
+        this.minFrame = 0;
+        this.maxFrame = 7;
+        this.spriteWidth = 680;
+        this.spriteHeight = 472;
     }
     update(){
         this.x -= this.movement;
+        if (frame % 10 == 0){
+            if (this.frameX < this.maxFrame) this.frameX++;
+            else this.frameX = this.minFrame;
+        }
+        
     }
     draw(){
-        ctx.fillStyle = 'red';
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-        printStuff('gold', '30px Arial', Math.floor(this.health), this.x + 15, this.y + 25);
+        //ctx.fillStyle = 'red';
+        //ctx.fillRect(this.x, this.y, this.width, this.height);
+        //printStuff('gold', '30px Arial', Math.floor(this.health), this.x + 15, this.y + 25);
+        ctx.drawImage(this.enemyType, this.frameX*this.spriteWidth, 0,
+        this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height);
     }
 }
 function handleEnemies(){
@@ -233,7 +253,7 @@ function handleEnemies(){
         if (interval > 120) interval -= 50;
     }
 }
-//recourses
+//resources
 const amounts = [20, 30, 40];
 class Resource {
     constructor(){
@@ -250,7 +270,7 @@ class Resource {
     }
 }
 function handleResources(){
-    if (frame % 500 == 0 && frame != 0 && score < winningScore){
+    if (frame % 500 == 0 && frame != 0 && enemies[0]){
         resources.push(new Resource());
     }
     for (let i = 0; i < resources.length; i++){
