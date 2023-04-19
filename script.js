@@ -1,10 +1,10 @@
 const canvas = document.getElementById('canvas1');
 const ctx = canvas.getContext('2d');
-canvas.width = 900;
-canvas.height = 600;
+canvas.width = 1125;
+canvas.height = 750;
 
 //global vars
-const cellSize = 100;
+const cellSize = 125;
 const cellGap = 3;
 const gameGrid = [];
 const units = [];
