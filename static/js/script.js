@@ -1,13 +1,13 @@
 const canvas = document.getElementById("canvas1");
 const ctx = canvas.getContext("2d");
-canvas.width = 900;
-canvas.height = 600;
+canvas.width = 1125;
+canvas.height = 750;
 
 const currUser = document.getElementById("u1").innerHTML;
 console.log("user is " + currUser);
 
 //global vars
-const cellSize = 100;
+const cellSize = 125;
 const cellGap = 3;
 const gameGrid = [];
 const units = [];
@@ -15,11 +15,14 @@ const enemies = [];
 const enemyVert = [];
 const projectiles = [];
 const resources = [];
+
 let money = 300;
+
 let frame = 0;
 let interval = 600;
 let endGame = false;
 let score = 0;
+let paused = false;
 const winningScore = 100;
 // mouse
 const mouse = {
@@ -314,6 +317,7 @@ function handleGameStatus() {
       135,
       340
     );
+    endGame = !endGame;
   }
 
   let player = {
@@ -351,19 +355,26 @@ canvas.addEventListener("click", function () {
 });
 
 function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "blue";
-  ctx.fillRect(0, 0, controlsBar.width, controlsBar.height);
-  handleGameGrid();
-  handleUnits();
-  handleResources();
-  handleProjectiles();
-  handleEnemies();
-  handleGameStatus();
-  handleFloatingMessages();
-  frame++;
+  if (!paused && !endGame) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "blue";
+    ctx.fillRect(0, 0, controlsBar.width, controlsBar.height);
+    handleGameGrid();
+    handleUnits();
+    handleResources();
+    handleProjectiles();
+    handleEnemies();
+    handleGameStatus();
+    handleFloatingMessages();
+    frame++;
+  } else {
+    printStuff("black", "60px Arial", "PAUSED", 130, 300);
+    printStuff("black", "30px Arial", "Press Esc to unpause!", 135, 340);
+  }
   if (!endGame) requestAnimationFrame(animate);
 }
+
+getMoney();
 animate();
 
 function collision(first, second) {
@@ -382,3 +393,32 @@ function collision(first, second) {
 window.addEventListener("resize", function () {
   canvasPosition = canvas.getBoundingClientRect();
 });
+
+function getMoney() {
+  fetch(`/getMoney/${currUser}`)
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (text) {
+      console.log("GET response:");
+      console.log(text);
+      if (text > 0) {
+        money = text;
+      } else {
+        money = 300;
+      }
+    });
+}
+
+document.addEventListener(
+  "keydown",
+  (event) => {
+    var name = event.key;
+    if (name !== "Escape") {
+      // Do nothing.
+      return;
+    }
+    paused = !paused;
+  },
+  false
+);

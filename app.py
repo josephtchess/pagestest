@@ -33,7 +33,7 @@ def showGame():
                     cur.execute("SELECT name FROM players WHERE name=\"" + username +"\";")
                     res = cur.fetchall()
                     if not(len(res) > 0):
-                        cur.execute("INSERT into players (name, currency, level, time, score) values (?,?,?,?,?)",(username,0,0,0,0))  
+                        cur.execute("INSERT into players (name, currency, level, time, score) values (?,?,?,?,?)",(username,420,0,0,0))  
                         con.commit()
                     print(username + " was not added")
                     
@@ -64,6 +64,17 @@ def showboard():
     return render_template("board.html",res=res)
 
 
+@app.route("/getMoney/<user>")
+def testcall(user):
+    print(user)
+    con = sqlite3.connect("gamedata.db")
+    cur = con.cursor()
+    cur.execute("SELECT * FROM players WHERE name=\"" + user +"\";")
+    res = cur.fetchall()
+    print(res)
+    print(res[0][1])
+    message = {'greeting':'Hello from Flask!' + user}
+    return jsonify(res[0][1])  # serialize and use JSON headers
 
 if __name__ == "__main__":
     if not os.path.isfile("./gamedata.db"):
