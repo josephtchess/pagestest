@@ -358,21 +358,37 @@ function handleEnemies(){
     }
 }
 //resources
+
 const amounts = [20, 30, 40];
+// ONLY IF VERSION 2 OF POWERUP
+let color_array = ['green', 'pink', 'blue', 'red', 'orange', 'yellow', 'purple', 'fuschia', 'white'];
+
 class Resource {
     constructor(){
         this.x = Math.random() * (canvas.width - cellSize);
         this.y = (Math.floor(Math.random() * 5) + 1) * cellSize + 25;
-        this.width = cellSize * 0.5;
-        this.height = cellSize * 0.5;
+        this.width = cellSize * 0.6;
+        this.height = cellSize * 0.6;
         this.amount = amounts[Math.floor(Math.random() * amounts.length)];
-    }
-    draw(){
-        ctx.fillStyle = 'yellow';
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-        printStuff("black", "20px Arial", this.amount, this.x + 15, this.y + 25);
-    }
-}
+       // this.font = 'Orbitron';
+        
+       //*****POWERUP VERSION 2***** 
+       this.color = color_array[Math.floor(Math.random() * color_array.length)] 
+
+    } 
+    draw(){ 
+    
+      //***POWERUP VERSION 1****
+     //  this.color = color_array[Math.floor(Math.random() * color_array.length)] 
+      
+      
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.width, this.height); 
+        ctx.fillStyle = 'black';
+        ctx.font = '20px Orbitron';
+        ctx.fillText(this.amount, this.x + 15, this.y + 25);
+    } 
+   }
 function handleResources(){
     if (frame % 500 == 0 && frame != 0 && enemies[0]){
         resources.push(new Resource());
