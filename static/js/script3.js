@@ -124,13 +124,13 @@ function handleProjectiles() {
 
 //defenders
 const unit1attack = new Image();
-unit1attack.src = "catJump.png";
+unit1attack.src = "/static/content/catJump.png";
 const unit1idle = new Image();
-unit1idle.src = "catIdle.png";
+unit1idle.src = "/static/content/catIdle.png";
 const unit2attack = new Image();
-unit2attack.src = "dogJump.png";
+unit2attack.src = "/static/content/dogJump.png";
 const unit2idle = new Image();
-unit2idle.src = "dogIdle.png";
+unit2idle.src = "/static/content/dogIdle.png";
 class Unit {
   constructor(x, y) {
     this.x = x;
@@ -311,7 +311,7 @@ function handleFloatingMessages() {
 //enemies
 const enemyTypes = [];
 const enemy1 = new Image();
-enemy1.src = "enemy1.png";
+enemy1.src = "/static/content/enemy1.png";
 enemyTypes.push(enemy1);
 class Enemy {
   constructor(vert) {
@@ -450,6 +450,22 @@ function handleGameStatus() {
       135,
       340
     );
+    endGame = !endGame;
+
+    let player = {
+      name: currUser,
+      score: score,
+    };
+
+    fetch(`${window.origin}/game`, {
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify(player),
+      cache: "no-cache",
+      headers: new Headers({
+        "content-type": "application/json",
+      }),
+    });
   }
 }
 
@@ -472,20 +488,27 @@ canvas.addEventListener("click", function () {
 });
 
 function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "blue";
-  ctx.fillRect(0, 0, controlsBar.width, controlsBar.height);
-  handleGameGrid();
-  handleUnits();
-  handleResources();
-  handleProjectiles();
-  handleEnemies();
-  chooseUnit();
-  handleGameStatus();
-  handleFloatingMessages();
-  frame++;
+  if (!paused && !endGame) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "blue";
+    ctx.fillRect(0, 0, controlsBar.width, controlsBar.height);
+    handleGameGrid();
+    handleUnits();
+    handleResources();
+    handleProjectiles();
+    handleEnemies();
+    chooseUnit();
+    handleGameStatus();
+    handleFloatingMessages();
+    frame++;
+  } else {
+    printStuff("black", "60px Arial", "PAUSED", 130, 300);
+    printStuff("black", "30px Arial", "Press Esc to unpause!", 135, 340);
+  }
   if (!endGame) requestAnimationFrame(animate);
 }
+
+//getMoney();
 animate();
 
 function collision(first, second) {
@@ -504,3 +527,32 @@ function collision(first, second) {
 window.addEventListener("resize", function () {
   canvasPosition = canvas.getBoundingClientRect();
 });
+
+function getMoney() {
+  fetch(`/getMoney/${currUser}`)
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (text) {
+      console.log("GET response:");
+      console.log(text);
+      if (text > 0) {
+        money = text;
+      } else {
+        money = 300;
+      }
+    });
+}
+
+document.addEventListener(
+  "keydown",
+  (event) => {
+    var name = event.key;
+    if (name !== "Escape") {
+      // Do nothing.
+      return;
+    }
+    paused = !paused;
+  },
+  false
+);
