@@ -361,7 +361,7 @@ function handleEnemies(){
 
 const amounts = [20, 30, 40];
 // ONLY IF VERSION 2 OF POWERUP
-let color_array = ['yellow', 'green', 'blue', 'red'];
+let color_array = ['green', 'pink', 'blue', 'red', 'orange', 'yellow', 'purple', 'fuschia', 'white'];
 
 class Resource {
     constructor(){
@@ -370,7 +370,7 @@ class Resource {
         this.width = cellSize * 0.6;
         this.height = cellSize * 0.6;
         this.amount = amounts[Math.floor(Math.random() * amounts.length)];
-        this.font = 'Orbitron';
+       // this.font = 'Orbitron';
         
        //*****POWERUP VERSION 2***** 
        this.color = color_array[Math.floor(Math.random() * color_array.length)] 
@@ -385,7 +385,7 @@ class Resource {
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, this.width, this.height); 
         ctx.fillStyle = 'black';
-        ctx.font = '20px Orbitron';
+        ctx.font = '20px Arial';
         ctx.fillText(this.amount, this.x + 15, this.y + 25);
     } 
    }
@@ -396,7 +396,14 @@ function handleResources(){
     for (let i = 0; i < resources.length; i++){
         resources[i].draw();
         if (resources[i] && mouse.x && mouse.y && collision(resources[i], mouse)){
+            //check this.color and do different things based on what it was
+            //yellow -> money up
+            //red -> damage up all
+            //green -> restore health
+            //blue -> slow enemies
             money += resources[i].amount;
+            
+            //messages
             floatingMessages.push(new floatingMessage('+' + resources[i].amount, resources[i].x, resources[i].y, 30, 'black'))
             floatingMessages.push(new floatingMessage('+' + resources[i].amount, 250, 80, 30, 'gold'));
             resources.splice(i, 1);
