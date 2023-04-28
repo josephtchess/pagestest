@@ -145,9 +145,9 @@ class Unit {
         this.chosenUnit = chosenUnit;
     }
     draw(){
-        ctx.fillStyle = 'blue';
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-        printStuff('gold', '30px Arial', Math.floor(this.health), this.x + 15, this.y + 25);
+        //ctx.fillStyle = 'blue';
+        //ctx.fillRect(this.x, this.y, this.width, this.height);
+        //printStuff('gold', '30px Arial', Math.floor(this.health), this.x + 15, this.y + 25);
         ctx.drawImage(this.unitType, this.frameX*this.spriteWidth, 0,
             this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height);
         if (this.chosenUnit == 1){
