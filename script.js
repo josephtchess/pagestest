@@ -361,7 +361,7 @@ function handleEnemies(){
 
 const amounts = [20, 30, 40];
 // ONLY IF VERSION 2 OF POWERUP
-let color_array = ['green', 'pink', 'blue', 'red', 'orange', 'yellow', 'purple', 'fuschia', 'white'];
+let color_array = ['yellow', 'green', 'blue', 'red'];
 
 class Resource {
     constructor(){
@@ -370,7 +370,7 @@ class Resource {
         this.width = cellSize * 0.6;
         this.height = cellSize * 0.6;
         this.amount = amounts[Math.floor(Math.random() * amounts.length)];
-       // this.font = 'Orbitron';
+        this.font = 'Orbitron';
         
        //*****POWERUP VERSION 2***** 
        this.color = color_array[Math.floor(Math.random() * color_array.length)] 
