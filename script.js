@@ -361,7 +361,7 @@ function handleEnemies(){
 
 const amounts = [20, 30, 40];
 // ONLY IF VERSION 2 OF POWERUP
-let color_array = ['green', 'blue', 'red',  'yellow'];
+let color_array = ['green', 'blue', 'red', 'yellow'];
 
 class Resource {
     constructor(){
@@ -378,10 +378,6 @@ class Resource {
     } 
     draw(){ 
     
-      //***POWERUP VERSION 1****
-     //  this.color = color_array[Math.floor(Math.random() * color_array.length)] 
-      
-      
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, this.width, this.height); 
         ctx.fillStyle = 'black';
@@ -396,6 +392,7 @@ function handleResources(){
     for (let i = 0; i < resources.length; i++){
         resources[i].draw();
         if (resources[i] && mouse.x && mouse.y && collision(resources[i], mouse)){
+
             //check this.color and do different things based on what it was
             //yellow -> money up
             //red -> damage up all
