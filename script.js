@@ -361,7 +361,7 @@ function handleEnemies(){
 
 const amounts = [20, 30, 40];
 // ONLY IF VERSION 2 OF POWERUP
-let color_array = ['green', 'pink', 'blue', 'red', 'orange', 'yellow', 'purple', 'fuschia', 'white'];
+let color_array = ['green', 'blue', 'red',  'yellow'];
 
 class Resource {
     constructor(){
