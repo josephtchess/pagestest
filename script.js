@@ -79,10 +79,10 @@ function handleGameGrid(){
 
 //projectiles
 class Projectile {
-    constructor(x, y){
+    constructor(x, y,damage){
         this.x = x;
         this.y = y;
-       // this.dmg = damage;
+        this.dmg = damage;
         this.width = 10;
         this.height = 10;
         this.dmg = 20;
@@ -132,9 +132,8 @@ class Unit {
         this.width = cellSize;
         this.height = cellSize;
         this.shooting = false;
-        //this.health = health;
-        this.maxHealth = health; 
         this.health = 100;
+        this.maxHealth = this.health;
         this.timer = 0;
         this.frameX = 0;
         this.frameY = 0;
@@ -179,7 +178,7 @@ class Unit {
                     if (!this.hasShot){
                         if (this.timer % 100 == 0){
                             this.hasShot = true;
-                            projectiles.push(new Projectile(this.x + cellSize/2, this.y + 50));
+                            projectiles.push(new Projectile(this.x + cellSize/2, this.y + 50, this.dmg));
                         }
                     }
                 }
@@ -397,20 +396,20 @@ function handleResources(){
         let current_resource = resources[i];
         resources[i].draw();
         if (resources[i] && mouse.x && mouse.y && collision(resources[i], mouse)){
-            // // yellow powerup is the default and has already been set. 
+            // yellow powerup is the default and has already been set. 
 
 
-            // //if red powerup was collected, damage increased to 50
-            // if (current_resource.color == 'red'){
-            //    // enemies[j].health -= projectiles[i].dmg;
-            //    this.dmg = 50;
+            //if red powerup was collected, damage increased to 50
+            if (current_resource.color == 'red'){
+               // enemies[j].health -= projectiles[i].dmg;
+               this.dmg = 50;
                
-            // }
-            // // if green powerup is selected, health gets reset to max
-            // else if(current_resource.color == 'green'){
-            //     this.dmg = 20;
-            //     this.health = maxHealth; 
-            // }
+            }
+            // if green powerup is selected, health gets reset to max
+            else if(current_resource.color == 'green'){
+                this.dmg = 20;
+                this.health = maxHealth; 
+            }
             // // else if(current_resource.color = 'blue'){
             //     this.dmg = 20;
             //     this.x -= this.movement;
