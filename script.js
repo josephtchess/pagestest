@@ -324,9 +324,8 @@ class Enemy {
     }
     update(){
         // be sure to change this to when powerup is blue, enemy's sprites will be slower per frame. 
-        if(current_resource.color = 'blue'){
-            this.x -= this.movement;
-        }
+        this.x -= this.movement;
+        
         if (frame % 10 == 0){
             if (this.frameX < this.maxFrame) this.frameX++;
             else this.frameX = this.minFrame;
@@ -412,12 +411,11 @@ function handleResources(){
                 this.dmg = 20;
                 this.health = maxHealth; 
             }
-            else if(current_resource.color = 'blue'){
-                this.dmg = 20;
-                this.x -= this.movement;
+            // else if(current_resource.color = 'blue'){
+            //     this.dmg = 20;
+            //     this.x -= this.movement;
 
-
-            }
+            // }
            
 
             //check this.color and do different things based on what it was
