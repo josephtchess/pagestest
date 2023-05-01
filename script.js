@@ -79,12 +79,13 @@ function handleGameGrid(){
 
 //projectiles
 class Projectile {
-    constructor(x, y){
+    constructor(x, y, damage){
         this.x = x;
         this.y = y;
+        this.dmg = damage;
         this.width = 10;
         this.height = 10;
-        this.dmg = 20;
+        // this.dmg = 20;
         this.speed = 5;
     }
     update(){
@@ -115,7 +116,7 @@ function handleProjectiles(){
     }
 }
 
-//defenders
+//these are the defenders
 const unit1attack = new Image();
 unit1attack.src = 'catJump.png';
 const unit1idle = new Image();
@@ -125,13 +126,15 @@ unit2attack.src = 'dogJump.png';
 const unit2idle = new Image();
 unit2idle.src = 'dogIdle.png';
 class Unit {
-    constructor(x,y){
+    constructor(x,y,health){
         this.x = x;
         this.y = y;
         this.width = cellSize;
         this.height = cellSize;
         this.shooting = false;
-        this.health = 100;
+        this.health = health;
+        this.maxHealth = health; 
+        //this.health = 100;
         this.timer = 0;
         this.frameX = 0;
         this.frameY = 0;
@@ -176,7 +179,7 @@ class Unit {
                     if (!this.hasShot){
                         if (this.timer % 100 == 0){
                             this.hasShot = true;
-                            projectiles.push(new Projectile(this.x + cellSize/2, this.y + 50));
+                            projectiles.push(new Projectile(this.x + cellSize/2, this.y + 50, this.dmg));
                         }
                     }
                 }
@@ -320,7 +323,10 @@ class Enemy {
         this.maxFrame = 7;
     }
     update(){
-        this.x -= this.movement;
+        // be sure to change this to when powerup is blue, enemy's sprites will be slower per frame. 
+        if(current_resource.color = 'blue'){
+            this.x -= this.movement;
+        }
         if (frame % 10 == 0){
             if (this.frameX < this.maxFrame) this.frameX++;
             else this.frameX = this.minFrame;
@@ -360,19 +366,18 @@ function handleEnemies(){
 //resources
 
 const amounts = [20, 30, 40];
-// ONLY IF VERSION 2 OF POWERUP
+//array of colors for powerups
 let color_array = ['green', 'blue', 'red', 'yellow'];
 
 class Resource {
     constructor(){
         this.x = Math.random() * (canvas.width - cellSize);
         this.y = (Math.floor(Math.random() * 5) + 1) * cellSize + 25;
-        this.width = cellSize * 0.6;
-        this.height = cellSize * 0.6;
+        this.width = cellSize * 0.3;
+        this.height = cellSize * 0.3;
         this.amount = amounts[Math.floor(Math.random() * amounts.length)];
-       // this.font = 'Orbitron';
         
-       //*****POWERUP VERSION 2***** 
+       //randomize colors of the powerups given the colors of the array
        this.color = color_array[Math.floor(Math.random() * color_array.length)] 
 
     } 
@@ -393,19 +398,31 @@ function handleResources(){
         let current_resource = resources[i];
         resources[i].draw();
         if (resources[i] && mouse.x && mouse.y && collision(resources[i], mouse)){
-            current_resource.color = color_array.length
-            //if yellow.... 
-            if (current_resource.color == color_array[3]){
-                money += resources[i].amount;
-            }
-            else if (current_resource.color == color_array[2]){
-                
-            }
+            // yellow powerup is the default and has already been set. 
 
+
+            //if red powerup was collected, damage increased to 50
+            if (current_resource.color == 'red'){
+               // enemies[j].health -= projectiles[i].dmg;
+               this.dmg = 50;
+               
+            }
+            // if green powerup is selected, health gets reset to max
+            else if(current_resource.color == 'green'){
+                this.dmg = 20;
+                this.health = maxHealth; 
+            }
+            else if(current_resource.color = 'blue'){
+                this.dmg = 20;
+                this.x -= this.movement;
+
+
+            }
+           
 
             //check this.color and do different things based on what it was
-            //yellow -> money up
-            //red -> damage prerty for all -- certain amount of frames, need to revert change
+            //yellow -> money up -- basic so dont need to change
+            //red -> damage property for all -- certain amount of frames, need to revert change
             //green -> restore health
             //blue -> slow enemies
             money += resources[i].amount;
