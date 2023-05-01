@@ -85,7 +85,7 @@ class Projectile {
         this.dmg = damage;
         this.width = 10;
         this.height = 10;
-        this.dmg = 20;
+       // this.dmg = 20;
         this.speed = 5;
     }
     update(){
