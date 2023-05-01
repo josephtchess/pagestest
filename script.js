@@ -79,13 +79,13 @@ function handleGameGrid(){
 
 //projectiles
 class Projectile {
-    constructor(x, y, damage){
+    constructor(x, y){
         this.x = x;
         this.y = y;
-        this.dmg = damage;
+       // this.dmg = damage;
         this.width = 10;
         this.height = 10;
-        // this.dmg = 20;
+        this.dmg = 20;
         this.speed = 5;
     }
     update(){
@@ -126,15 +126,15 @@ unit2attack.src = 'dogJump.png';
 const unit2idle = new Image();
 unit2idle.src = 'dogIdle.png';
 class Unit {
-    constructor(x,y,health){
+    constructor(x,y){
         this.x = x;
         this.y = y;
         this.width = cellSize;
         this.height = cellSize;
         this.shooting = false;
-        this.health = health;
+        //this.health = health;
         this.maxHealth = health; 
-        //this.health = 100;
+        this.health = 100;
         this.timer = 0;
         this.frameX = 0;
         this.frameY = 0;
@@ -179,7 +179,7 @@ class Unit {
                     if (!this.hasShot){
                         if (this.timer % 100 == 0){
                             this.hasShot = true;
-                            projectiles.push(new Projectile(this.x + cellSize/2, this.y + 50, this.dmg));
+                            projectiles.push(new Projectile(this.x + cellSize/2, this.y + 50));
                         }
                     }
                 }
