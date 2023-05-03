@@ -12,6 +12,7 @@ const enemies = [];
 const enemyVert = [];
 const projectiles = [];
 const resources = [];
+//const damage = [];
 let money = 300;
 let frame = 0;
 let interval = 600;
@@ -79,7 +80,7 @@ function handleGameGrid(){
 
 //projectiles
 class Projectile {
-    constructor(x, y,damage){
+    constructor(x, y, damage){
         this.x = x;
         this.y = y;
         this.dmg = damage;
@@ -131,6 +132,7 @@ class Unit {
         this.y = y;
         this.width = cellSize;
         this.height = cellSize;
+        this.dmg = 20;
         this.shooting = false;
         this.health = 100;
         this.maxHealth = this.health;
@@ -371,8 +373,8 @@ class Resource {
     constructor(){
         this.x = Math.random() * (canvas.width - cellSize);
         this.y = (Math.floor(Math.random() * 5) + 1) * cellSize + 25;
-        this.width = cellSize * 0.3;
-        this.height = cellSize * 0.3;
+        this.width = cellSize * 0.5;
+        this.height = cellSize * 0.5;
         this.amount = amounts[Math.floor(Math.random() * amounts.length)];
         
        //randomize colors of the powerups given the colors of the array
@@ -399,22 +401,31 @@ function handleResources(){
             // yellow powerup is the default and has already been set. 
 
 
-            //if red powerup was collected, damage increased to 50
+            //if red powerup was collected, damage increased to 50 -- only for sprites when collecting red powerup -- for all spritres -- make "damage" - global var
             if (current_resource.color == 'red'){
                // enemies[j].health -= projectiles[i].dmg;
-               this.dmg = 50;
+               for( let unit of units){
+                unit.dmg = unit.dmg + 30;
+               }
+
+               
                
             }
             // if green powerup is selected, health gets reset to max
             else if(current_resource.color == 'green'){
-                this.dmg = 20;
-                this.health = maxHealth; 
-            }
-            // // else if(current_resource.color = 'blue'){
-            //     this.dmg = 20;
-            //     this.x -= this.movement;
+                for( let unit of units){
 
-            // }
+                unit.health = unit.maxHealth; 
+                }
+            }
+           // -- for future sprites -- use global var ****
+             else if(current_resource.color = 'blue'){
+                for( let enemy of enemies){
+                   enemy.movement -= 0.1; 
+                   enemy.dmg = 20;
+                    }
+
+            }
            
 
             //check this.color and do different things based on what it was
