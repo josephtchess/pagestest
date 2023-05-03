@@ -136,6 +136,7 @@ class Unit {
         this.shooting = false;
         this.health = 100;
         this.maxHealth = this.health;
+        this.revertdmg = 20;
         this.timer = 0;
         this.frameX = 0;
         this.frameY = 0;
@@ -147,6 +148,8 @@ class Unit {
         this.unitType = unit1idle;
         this.hasShot = false;
         this.chosenUnit = chosenUnit;
+        this.isBoosted = 0;
+        this.boostTime = 0;
     }
     draw(){
         //ctx.fillStyle = 'blue';
@@ -165,6 +168,11 @@ class Unit {
     }
     update(){
         this.timer++;
+        if (this.isBoosted) this.boostTime--;
+        if (this.isBoosted && this.boostTime <= 0){ 
+            this.dmg = this.revertdmg;
+            this.isBoosted = 0;
+        }
         if (this.canShoot){
             this.hasShot = false;
             for (let i = 0; i < enemyVert.length; i++){
@@ -178,8 +186,8 @@ class Unit {
                         this.unitType = unit2attack;
                     }
                     if (!this.hasShot){
+                        this.hasShot = true;
                         if (this.timer % 100 == 0){
-                            this.hasShot = true;
                             projectiles.push(new Projectile(this.x + cellSize/2, this.y + 50, this.dmg));
                         }
                     }
@@ -309,6 +317,8 @@ class Enemy {
         this.speed = Math.random()* 0.2 + 0.5;
         this.movement = this.speed;
         this.maxHealth = this.health;
+        this.isBoosted = 0;
+        this.boostTime = 0;
         this.enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
         if (this.enemyType == enemy1){
             this.spriteWidth = 682;
@@ -325,7 +335,13 @@ class Enemy {
     }
     update(){
         // be sure to change this to when powerup is blue, enemy's sprites will be slower per frame. 
+        if (this.isBoosted) this.boostTime--;
+        if (this.isBoosted && this.boostTime <= 0){ 
+            this.movement = this.speed;
+            this.isBoosted = 0;
+        }
         this.x -= this.movement;
+
         
         if (frame % 10 == 0){
             if (this.frameX < this.maxFrame) this.frameX++;
@@ -399,45 +415,58 @@ function handleResources(){
         resources[i].draw();
         if (resources[i] && mouse.x && mouse.y && collision(resources[i], mouse)){
             // yellow powerup is the default and has already been set. 
-
+            
+            //for debugging
+            console.log(current_resource.color);
 
             //if red powerup was collected, damage increased to 50 -- only for sprites when collecting red powerup -- for all spritres -- make "damage" - global var
             if (current_resource.color == 'red'){
                // enemies[j].health -= projectiles[i].dmg;
                for( let unit of units){
-                unit.dmg = unit.dmg + 30;
-               }
+                unit.dmg = unit.dmg *= 2;
+                unit.isBoosted = 1;
+                unit.boostTime = 1000;
+                floatingMessages.push(new floatingMessage('commence damage', unit.x, unit.y, 30, 'red'))
 
-               
-               
+               }
             }
             // if green powerup is selected, health gets reset to max
             else if(current_resource.color == 'green'){
                 for( let unit of units){
-
                 unit.health = unit.maxHealth; 
+                floatingMessages.push(new floatingMessage('health restored', unit.x, unit.y, 30, 'green'))
                 }
+
             }
            // -- for future sprites -- use global var ****
-             else if(current_resource.color = 'blue'){
-                for( let enemy of enemies){
-                   enemy.movement -= 0.1; 
-                   enemy.dmg = 20;
-                    }
+          // if blue powerup is selected, enemy movement should be slower
 
+             else if(current_resource.color == 'blue'){
+                for( let enemy of enemies){
+                   enemy.movement *= 0.5;
+                   enemy.isBoosted = 1;
+                   enemy.boostTime = 500; 
+                  // enemy.movement -= 0.1; 
+                   //enemy.dmg = 20;
+                    }
+                    floatingMessages.push(new floatingMessage('enemies slowed', resources[i].x, resources[i].y, 30, 'blue'))
+                    
             }
-           
+            else{
+                money += resources[i].amount;
+                floatingMessages.push(new floatingMessage('+' + resources[i].amount, resources[i].x, resources[i].y, 30, 'black'))
+                floatingMessages.push(new floatingMessage('+' + resources[i].amount, 250, 80, 30, 'gold'));
+            }
 
             //check this.color and do different things based on what it was
             //yellow -> money up -- basic so dont need to change
             //red -> damage property for all -- certain amount of frames, need to revert change
             //green -> restore health
             //blue -> slow enemies
-            money += resources[i].amount;
+            
             
             //messages
-            floatingMessages.push(new floatingMessage('+' + resources[i].amount, resources[i].x, resources[i].y, 30, 'black'))
-            floatingMessages.push(new floatingMessage('+' + resources[i].amount, 250, 80, 30, 'gold'));
+
             resources.splice(i, 1);
             i--;
         }
@@ -471,7 +500,8 @@ canvas.addEventListener('click', function(){
         if(units[i].x == gridPositionX && units[i].y == gridPositionY) 
         return;
     }
-    let UnitCost = 100;
+    // possibly where they can get more resources
+    let UnitCost = 40;
     if(money >= UnitCost){
         units.push(new Unit(gridPositionX,gridPositionY));
         money -= UnitCost;
