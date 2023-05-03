@@ -400,16 +400,20 @@ function handleResources(){
 
 
             //if red powerup was collected, damage increased to 50
+            /*
             if (current_resource.color == 'red'){
                // enemies[j].health -= projectiles[i].dmg;
                this.dmg = 50;
                
             }
+            
             // if green powerup is selected, health gets reset to max
+           
             else if(current_resource.color == 'green'){
                 this.dmg = 20;
                 this.health = maxHealth; 
             }
+            */
             // // else if(current_resource.color = 'blue'){
             //     this.dmg = 20;
             //     this.x -= this.movement;
