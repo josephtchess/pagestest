@@ -12,7 +12,6 @@ const enemies = [];
 const enemyVert = [];
 const projectiles = [];
 const resources = [];
-//const damage = [];
 let money = 300;
 let frame = 0;
 let interval = 600;
@@ -86,7 +85,6 @@ class Projectile {
         this.dmg = damage;
         this.width = 10;
         this.height = 10;
-       // this.dmg = 20;
         this.speed = 5;
     }
     update(){
@@ -152,9 +150,6 @@ class Unit {
         this.boostTime = 0;
     }
     draw(){
-        //ctx.fillStyle = 'blue';
-        //ctx.fillRect(this.x, this.y, this.width, this.height);
-        //printStuff('gold', '30px Arial', Math.floor(this.health), this.x + 15, this.y + 25);
         ctx.drawImage(this.unitType, this.frameX*this.spriteWidth, 0,
             this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height);
         if (this.chosenUnit == 1){
@@ -327,7 +322,6 @@ class Enemy {
             this.spriteWidth = 547;
             this.spriteHeight = 481;
         }
-        //this.enemyType = enemyTypes[0];
         this.frameX = 0;
         this.frameY = 0;
         this.minFrame = 0;
@@ -349,9 +343,6 @@ class Enemy {
         }
     }
     draw(){
-        //ctx.fillStyle = 'red';
-        //ctx.fillRect(this.x, this.y, this.width, this.height);
-        //printStuff('gold', '30px Arial', Math.floor(this.health), this.x + 15, this.y + 25);
         ctx.drawImage(this.enemyType, this.frameX*this.spriteWidth, 0,
         this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height);
     }
@@ -419,7 +410,7 @@ function handleResources(){
             //for debugging
             console.log(current_resource.color);
 
-            //if red powerup was collected, damage increased to 50 -- only for sprites when collecting red powerup -- for all spritres -- make "damage" - global var
+            //if red powerup was collected, damage increased to 50 -- only for sprites when collecting red powerup
             if (current_resource.color == 'red'){
                // enemies[j].health -= projectiles[i].dmg;
                for( let unit of units){
@@ -427,10 +418,7 @@ function handleResources(){
                 unit.isBoosted = 1;
                 unit.boostTime = 1000;
                 floatingMessages.push(new floatingMessage('commence damage', unit.x, unit.y, 30, 'red'))
-
-
                }
-
             }
             // if green powerup is selected, health gets reset to max
             else if(current_resource.color == 'green'){
@@ -439,17 +427,15 @@ function handleResources(){
                 floatingMessages.push(new floatingMessage('health restored', unit.x, unit.y, 30, 'green'))
                 }
             }
-           // -- for future sprites -- use global var ****
+      
           // if blue powerup is selected, enemy movement should be slower
-
              else if(current_resource.color == 'blue'){
                 for( let enemy of enemies){
                    enemy.movement *= 0.5;
                    enemy.isBoosted = 1;
                    enemy.boostTime = 500; 
                    floatingMessages.push(new floatingMessage('enemies slowed', resources[i].x, resources[i].y, 30, 'blue'))
-
-                    }
+                }
                     
             }
             else{
@@ -458,13 +444,6 @@ function handleResources(){
                 floatingMessages.push(new floatingMessage('+' + resources[i].amount, 250, 80, 30, 'gold'));
             }
 
-            //check this.color and do different things based on what it was
-            //yellow -> money up -- basic so dont need to change
-            //red -> damage property for all -- certain amount of frames, need to revert change
-            //green -> restore health
-            //blue -> slow enemies
-            
-            
             //messages
             resources.splice(i, 1);
             i--;
