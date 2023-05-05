@@ -4,6 +4,8 @@ canvas.width = 900;
 canvas.height = 600;
 
 //global vars
+let theme = new Audio('theme.mp3');
+theme.play();
 const cellSize = 100;
 const cellGap = 3;
 const gameGrid = [];
@@ -448,9 +450,11 @@ function handleGameStatus(){
     printStuff('gold', '30px Arial', 'Resources: ' + money, 180, 80);
     printStuff('gold', '30px Arial', 'Score: ' + score, 180, 30);
     if (endGame){
+        theme.pause();
         printStuff('black', '90px Arial', 'Game OVER', 135, 330);
     }
     if (score >= winningScore && enemies.length == 0){
+        theme.pause();
         printStuff("black", '60px Arial', "LEVEL COMPLETE", 130, 300);
         printStuff("black", '30px Arial', "You win with " + score + ' points! ', 135, 340);
     }
