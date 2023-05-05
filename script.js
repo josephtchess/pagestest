@@ -5,6 +5,7 @@ canvas.height = 600;
 
 //global vars
 let theme = new Audio('theme.mp3');
+theme.loop = true;
 theme.play();
 const cellSize = 100;
 const cellGap = 3;
