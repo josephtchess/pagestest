@@ -16,11 +16,12 @@ const enemyVert = [];
 const projectiles = [];
 const resources = [];
 let money = 300;
+let paused = false;
 let frame = 0;
 let interval = 600;
 let endGame = false;
-let paused = false;
 let score = 0;
+let levelcap = 3;
 let level = 1;
 let chosenUnit = 1;
 const winningScore = 100;
@@ -103,9 +104,11 @@ class Projectile {
 }
 function handleProjectiles() {
   for (let i = 0; i < projectiles.length; i++) {
+    //update and draw each projectile
     projectiles[i].update();
     projectiles[i].draw();
     for (let j = 0; j < enemies.length; j++) {
+      //iterate through enemies and if they make contact decrease health and remove projectile
       if (
         enemies[j] &&
         projectiles[i] &&
@@ -116,6 +119,7 @@ function handleProjectiles() {
         i--;
       }
     }
+    //remove projectile if out of range
     if (projectiles[i] && projectiles[i].x > canvas.width - cellSize) {
       projectiles.splice(i, 1);
       i--;
@@ -153,15 +157,9 @@ class Unit {
     this.chosenUnit = chosenUnit;
   }
   draw() {
-    ctx.fillStyle = "blue";
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-    printStuff(
-      "gold",
-      "30px Arial",
-      Math.floor(this.health),
-      this.x + 15,
-      this.y + 25
-    );
+    //ctx.fillStyle = 'blue';
+    //ctx.fillRect(this.x, this.y, this.width, this.height);
+    //printStuff('gold', '30px Arial', Math.floor(this.health), this.x + 15, this.y + 25);
     ctx.drawImage(
       this.unitType,
       this.frameX * this.spriteWidth,
@@ -175,28 +173,32 @@ class Unit {
     );
     if (this.chosenUnit == 1) {
       this.maxFrame = 9;
-      this.unitType = unit1idle;
+      this.unitType = unit1idle; //unit 1 is idle
     }
     if (this.chosenUnit == 2) {
       this.maxFrame = 9;
-      this.unitType = unit2idle;
+      this.unitType = unit2idle; //unit 2 is idle
     }
   }
   update() {
     this.timer++;
     if (this.canShoot) {
-      this.hasShot = false;
+      //some units might not shoot
+      this.hasShot = false; //flag to check if unit has shot enemy
       for (let i = 0; i < enemyVert.length; i++) {
         if (this.y == enemyVert[i]) {
           if (this.chosenUnit == 1) {
+            //unit one is shooting
             this.maxFrame = 10;
             this.unitType = unit1attack;
           }
           if (this.chosenUnit == 2) {
+            //unit two is shooting
             this.maxFrame = 7;
             this.unitType = unit2attack;
           }
           if (!this.hasShot) {
+            //shoot projectile
             if (this.timer % 100 == 0) {
               this.hasShot = true;
               projectiles.push(
@@ -209,6 +211,7 @@ class Unit {
     }
 
     if (frame % 15 == 0) {
+      //update frame of sprite
       if (this.frameX < this.maxFrame) this.frameX++;
       else this.frameX = this.minFrame;
     }
@@ -216,9 +219,11 @@ class Unit {
 }
 function handleUnits() {
   for (let i = 0; i < units.length; i++) {
+    //draw and update units
     units[i].draw();
     units[i].update();
     for (let j = 0; j < enemies.length; j++) {
+      //iterate through enemies and do collision stuff
       if (units[i] && collision(units[i], enemies[j])) {
         units[i].health -= enemies[j].dmg;
         enemies[j].movement = 0;
@@ -249,7 +254,7 @@ function chooseUnit() {
   let select2stroke = "black";
   if (collision(mouse, select1) && mouse.clicked) {
     chosenUnit = 1;
-  } else if (collision(mouse, select2) && mouse.clicked) {
+  } else if (level >= 2 && collision(mouse, select2) && mouse.clicked) {
     chosenUnit = 2;
   }
   if (chosenUnit == 1) {
@@ -268,11 +273,13 @@ function chooseUnit() {
   ctx.strokeStyle = select1stroke;
   ctx.strokeRect(select1.x, select1.y, select1.width, select1.height);
   ctx.drawImage(unit1idle, 0, 0, 544, 476, 0, 10, 544 / 6, 476 / 6);
-  ctx.fillStyle = "rgba(0,0,0,0.2)";
-  ctx.fillRect(select2.x, select2.y, select2.width, select2.height);
-  ctx.strokeStyle = select2stroke;
-  ctx.strokeRect(select2.x, select2.y, select2.width, select2.height);
-  ctx.drawImage(unit2idle, 0, 0, 544, 476, 80, 10, 544 / 6, 476 / 6);
+  if (level >= 2) {
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.fillRect(select2.x, select2.y, select2.width, select2.height);
+    ctx.strokeStyle = select2stroke;
+    ctx.strokeRect(select2.x, select2.y, select2.width, select2.height);
+    ctx.drawImage(unit2idle, 0, 0, 544, 476, 80, 10, 544 / 6, 476 / 6);
+  }
 }
 
 // Floating Messages
@@ -335,6 +342,7 @@ class Enemy {
       this.spriteHeight = 481;
     }
     //this.enemyType = enemyTypes[0];
+
     this.frameX = 0;
     this.frameY = 0;
     this.minFrame = 0;
@@ -380,7 +388,7 @@ function handleEnemies() {
       i--;
     }
   }
-  if (frame % 200 == 0 && score < winningScore) {
+  if (frame % ((4 - level) * 100) == 0 && score < winningScore) {
     let vert = Math.floor(Math.random() * 5 + 1) * cellSize;
     enemies.push(new Enemy(vert));
     enemyVert.push(vert);
@@ -453,9 +461,13 @@ function handleGameStatus() {
     );
     endGame = !endGame;
 
+    if (level + 1 < levelcap + 1) {
+      level = level + 1;
+    }
     let player = {
       name: currUser,
       score: score,
+      level: level,
     };
 
     fetch(`${window.origin}/game`, {
@@ -508,8 +520,8 @@ function animate() {
   }
   if (!endGame) requestAnimationFrame(animate);
 }
-
 getMoney();
+getLevel();
 animate();
 
 function collision(first, second) {
@@ -555,5 +567,17 @@ function getMoney() {
       } else {
         money = 300;
       }
+    });
+}
+
+function getLevel() {
+  fetch(`/getLevel/${currUser}`)
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (text) {
+      console.log("GET response:");
+      console.log(text);
+      level = text;
     });
 }

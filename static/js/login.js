@@ -15,7 +15,7 @@ function myFunction() {
   element.innerHTML = name;
   console.log(name);
 
-  fetch(`${window.origin}/game`, {
+  fetch(`${window.origin}/`, {
     method: "POST",
     credentials: "include",
     body: JSON.stringify(name),

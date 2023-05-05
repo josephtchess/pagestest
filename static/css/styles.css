@@ -17,5 +17,5 @@ p {
   transform: translate(-50%, -50%);
   width: 900px;
   height: 600px;
-  background: white;
+  background-image: url("/static/content/TestCanvas.png");
 }

@@ -1,0 +1,40 @@
+body {
+  background-image: url("cat background.jpg");
+  background-size: cover;
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+  background-color: pink;
+}
+
+.screen {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+}
+
+.menu {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #000000;
+  margin-left: 4em;
+}
+
+.menu h1 {
+  font-size: 4em;
+  letter-spacing: 10px;
+}
+
+.buttons button {
+  background-color: #993232;
+  border: 1px solid rgb(126, 0, 0);
+  color: rgb(2, 2, 2);
+  padding: 10px 24px;
+  cursor: pointer;
+  float: left;
+}
+
+.buttons button:hover {
+  background-color: #c55757;
+}

@@ -3,6 +3,7 @@ import os.path
 import sqlite3
 import db
 app = Flask(__name__)
+app.secret_key = "UMBC447"
 
 
 
@@ -14,14 +15,15 @@ def getplayers():
     conn.close()
     return results
 
+@app.route("/levels")
+def levelSelect():
+    print("inside level selection with username",session['user'])
+    return render_template("level.html",username=session['user'])
 
-@app.route("/")
+
+@app.route("/",methods=["POST","GET"])
 def homePage():
-    return render_template("start.html")
-
-
-@app.route("/game", methods=["POST","GET"])
-def showGame():
+    print("home")
     if request.method == "POST":
         username = request.get_json()
         if type(username) is dict:
@@ -33,17 +35,44 @@ def showGame():
                     cur.execute("SELECT name FROM players WHERE name=\"" + username +"\";")
                     res = cur.fetchall()
                     if not(len(res) > 0):
-                        cur.execute("INSERT into players (name, currency, level, time, score) values (?,?,?,?,?)",(username,420,0,0,0))  
+                        cur.execute("INSERT into players (name, currency, level, time, score) values (?,?,?,?,?)",(username,420,1,0,0))
+                        session['user'] = username
                         con.commit()
-                    print(username + " was not added")
-                    
+                    ##print(username + " was not added")
+                    session['user'] = username
             except:
                 con.rollback()
             con.close()
-    return render_template("index.html")
+
+
+    return render_template("start.html")
+
+
+@app.route("/game", methods=["POST","GET"])
+def showGame():
+    if request.method == "POST":
+        username = request.get_json()
+        if type(username) is dict:
+            updateScore(username)
+        # else:
+        #     try:
+        #         with sqlite3.connect("gamedata.db") as con:  
+        #             cur = con.cursor()
+        #             cur.execute("SELECT name FROM players WHERE name=\"" + username +"\";")
+        #             res = cur.fetchall()
+        #             if not(len(res) > 0):
+        #                 cur.execute("INSERT into players (name, currency, level, time, score) values (?,?,?,?,?)",(username,420,1,0,0))  
+        #                 con.commit()
+        #             print(username + " was not added")
+                    
+        #     except:
+        #         con.rollback()
+        #     con.close()
+    return render_template("index.html",username=session['user'])
 
 
 def updateScore(player):
+    print(player,"updating score and level")
     try:
         with sqlite3.connect("gamedata.db") as con:  
             cur = con.cursor()
@@ -53,6 +82,10 @@ def updateScore(player):
                 cmm = "UPDATE players SET score = " + str(player["score"]) + " WHERE name =\"" + player["name"] +"\";"
                 cur.execute(cmm)
                 con.commit()
+            cmm = "UPDATE players SET level = " + str(player["level"]) + " WHERE name =\"" + player["name"] +"\";"
+            cur.execute(cmm)
+            con.commit()
+
     except:
         con.rollback()
 
@@ -65,7 +98,7 @@ def showboard():
 
 
 @app.route("/getMoney/<user>")
-def testcall(user):
+def getMoney(user):
     print(user)
     con = sqlite3.connect("gamedata.db")
     cur = con.cursor()
@@ -74,9 +107,25 @@ def testcall(user):
     print(res)
     print(res[0][1])
     message = {'greeting':'Hello from Flask!' + user}
-    return jsonify(res[0][1])  # serialize and use JSON headers
+    return jsonify(res[0][1])  # serialize and use JSON header
+
+@app.route("/getLevel/<user>")
+def getLevel(user):
+    print(user)
+    con = sqlite3.connect("gamedata.db")
+    cur = con.cursor()
+    cur.execute("SELECT * FROM players WHERE name=\"" + user +"\";")
+    res = cur.fetchall()
+    print(res)
+    print(res[0][1])
+    message = {'greeting':'Hello from Flask!' + user}
+    return jsonify(res[0][2])  # serialize and use JSON header
+
+
+
 
 if __name__ == "__main__":
     if not os.path.isfile("./gamedata.db"):
         db.createDB()
     app.run()
+
