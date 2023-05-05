@@ -12,7 +12,7 @@ function updateButtons() {
     .then(function (text) {
       console.log("GET response:");
       console.log(text);
-      let = level = text;
+      let level = text;
       console.log("level is", level);
       if (level == 1) {
         b2.disabled = true;

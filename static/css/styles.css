@@ -9,13 +9,25 @@ h1 {
 p {
   text-align: center;
 }
+
 #canvas1 {
-  border: 1px solid white;
+  /*border: 1px solid white;*/
   position: absolute;
-  top: 50%;
+  top: 44%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 900px;
   height: 600px;
-  background-image: url("/static/content/TestCanvas.png");
+  /*background-image: url("/static/content/TestCanvas.png");*/
+}
+
+#canvasBottom {
+  border: 1px solid green;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1125px;
+  height: 750px;
+  background-image: url("/static/content/Big.png");
 }
