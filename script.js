@@ -428,7 +428,9 @@ function handleResources(){
                 unit.boostTime = 1000;
                 floatingMessages.push(new floatingMessage('commence damage', unit.x, unit.y, 30, 'red'))
 
+
                }
+
             }
             // if green powerup is selected, health gets reset to max
             else if(current_resource.color == 'green'){
@@ -436,7 +438,6 @@ function handleResources(){
                 unit.health = unit.maxHealth; 
                 floatingMessages.push(new floatingMessage('health restored', unit.x, unit.y, 30, 'green'))
                 }
-
             }
            // -- for future sprites -- use global var ****
           // if blue powerup is selected, enemy movement should be slower
@@ -446,10 +447,9 @@ function handleResources(){
                    enemy.movement *= 0.5;
                    enemy.isBoosted = 1;
                    enemy.boostTime = 500; 
-                  // enemy.movement -= 0.1; 
-                   //enemy.dmg = 20;
+                   floatingMessages.push(new floatingMessage('enemies slowed', resources[i].x, resources[i].y, 30, 'blue'))
+
                     }
-                    floatingMessages.push(new floatingMessage('enemies slowed', resources[i].x, resources[i].y, 30, 'blue'))
                     
             }
             else{
@@ -466,7 +466,6 @@ function handleResources(){
             
             
             //messages
-
             resources.splice(i, 1);
             i--;
         }
