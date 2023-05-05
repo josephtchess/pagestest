@@ -130,6 +130,7 @@ const unit2idle = new Image();
 unit2idle.src = 'dogIdle.png';
 class Unit {
     constructor(x,y){
+        this.dmg = 20;
         this.x = x;
         this.y = y;
         this.width = cellSize;
