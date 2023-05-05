@@ -5,7 +5,9 @@ canvas.height = 600;
 
 const currUser = document.getElementById("u1").innerHTML;
 console.log("user is " + currUser);
-
+let theme = new Audio('/static/content/theme.mp3');
+theme.loop = true;
+theme.play();
 //global vars
 const cellSize = 100;
 const cellGap = 3;
@@ -84,12 +86,12 @@ function handleGameGrid() {
 
 //projectiles
 class Projectile {
-  constructor(x, y) {
+  constructor(x, y, dmg) {
     this.x = x;
     this.y = y;
     this.width = 10;
     this.height = 10;
-    this.dmg = 20;
+    this.dmg = dmg;
     this.speed = 5;
   }
   update() {
@@ -140,6 +142,8 @@ class Unit {
   constructor(x, y) {
     this.x = x;
     this.y = y;
+    this.dmg = 20;
+    this.ogdmg = 20;
     this.width = cellSize;
     this.height = cellSize;
     this.shooting = false;
@@ -155,6 +159,8 @@ class Unit {
     this.unitType = unit1idle;
     this.hasShot = false;
     this.chosenUnit = chosenUnit;
+    this.isBoosted = 0;
+    this.boostTime = 0;
   }
   draw() {
     //ctx.fillStyle = 'blue';
@@ -182,6 +188,11 @@ class Unit {
   }
   update() {
     this.timer++;
+    if (this.isBoosted) this.boostTime--;
+    if (this.isBoosted && this.boostTime <= 0){ 
+        this.dmg = this.ogdmg;
+        this.isBoosted = 0;
+    }
     if (this.canShoot) {
       //some units might not shoot
       this.hasShot = false; //flag to check if unit has shot enemy
@@ -202,7 +213,7 @@ class Unit {
             if (this.timer % 100 == 0) {
               this.hasShot = true;
               projectiles.push(
-                new Projectile(this.x + cellSize / 2, this.y + 50)
+                new Projectile(this.x + cellSize / 2, this.y + 50, this.dmg)
               );
             }
           }
@@ -219,6 +230,7 @@ class Unit {
 }
 function handleUnits() {
   for (let i = 0; i < units.length; i++) {
+    
     //draw and update units
     units[i].draw();
     units[i].update();
@@ -229,10 +241,12 @@ function handleUnits() {
         enemies[j].movement = 0;
       }
       if (units[i] && units[i].health <= 0) {
-        units.splice(i, 1);
-        i--;
         enemies[j].movement = enemies[j].speed;
       }
+    }
+    if (units[i].health <= 0){
+      units.splice(i, 1);
+      i--;
     }
   }
 }
@@ -334,6 +348,8 @@ class Enemy {
     this.movement = this.speed;
     this.maxHealth = this.health;
     this.enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+    this.isSlowed = 0;
+    this.slowTime = 0;
     if (this.enemyType == enemy1) {
       this.spriteWidth = 682;
       this.spriteHeight = 474;
@@ -349,6 +365,11 @@ class Enemy {
     this.maxFrame = 7;
   }
   update() {
+    if (this.isSlowed) this.slowTime--;
+    if(this.isSlowed && this.slowTime <= 0){
+        this.isSlowed = 0;
+        this.movement = this.speed;
+    }
     this.x -= this.movement;
     if (frame % 10 == 0) {
       if (this.frameX < this.maxFrame) this.frameX++;
@@ -396,46 +417,95 @@ function handleEnemies() {
   }
 }
 //resources
-const amounts = [20, 30, 40];
+//resources
+const amounts = [30];
+let color_array = ['green', 'blue', 'red', 'yellow'];
 class Resource {
-  constructor() {
-    this.x = Math.random() * (canvas.width - cellSize);
-    this.y = (Math.floor(Math.random() * 5) + 1) * cellSize + 25;
-    this.width = cellSize * 0.5;
-    this.height = cellSize * 0.5;
-    this.amount = amounts[Math.floor(Math.random() * amounts.length)];
-  }
-  draw() {
-    ctx.fillStyle = "yellow";
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-    printStuff("black", "20px Arial", this.amount, this.x + 15, this.y + 25);
-  }
-}
-function handleResources() {
-  if (frame % 500 == 0 && frame != 0 && enemies[0]) {
-    resources.push(new Resource());
-  }
-  for (let i = 0; i < resources.length; i++) {
-    resources[i].draw();
-    if (resources[i] && mouse.x && mouse.y && collision(resources[i], mouse)) {
-      money += resources[i].amount;
-      floatingMessages.push(
-        new floatingMessage(
-          "+" + resources[i].amount,
-          resources[i].x,
-          resources[i].y,
-          30,
-          "black"
-        )
-      );
-      floatingMessages.push(
-        new floatingMessage("+" + resources[i].amount, 250, 80, 30, "gold")
-      );
-      resources.splice(i, 1);
-      i--;
+    constructor(){
+        this.x = Math.random() * (canvas.width - cellSize);
+        this.y = (Math.floor(Math.random() * 5) + 1) * cellSize + 25;
+        this.width = cellSize * 0.5;
+        this.height = cellSize * 0.5;
+        this.amount = amounts[Math.floor(Math.random() * amounts.length)];
+               //randomize colors of the powerups given the colors of the array
+        this.color = color_array[Math.floor(Math.random() * color_array.length)]
     }
-  }
+    draw(){
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+        if (this.color == "yellow"){ 
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.fillText(this.amount, this.x + 15, this.y + 25);
+        }
+    }
 }
+function handleResources(){
+    if (frame % 500 == 0 && frame != 0 && enemies[0]){
+        resources.push(new Resource());
+    }
+    for (let i = 0; i < resources.length; i++){
+        let current_resource = resources[i];
+        resources[i].draw();
+        if (resources[i] && mouse.x && mouse.y && collision(resources[i], mouse)){
+            // yellow powerup is the default and has already been set. 
+            
+            //for debugging
+            console.log(current_resource.color);
+
+            //if red powerup was collected, damage increased to 50 -- only for sprites when collecting red powerup -- for all spritres -- make "damage" - global var
+            if (current_resource.color == 'red'){
+               // enemies[j].health -= projectiles[i].dmg;
+               for( let unit of units){
+                unit.dmg = unit.dmg *= 2;
+                unit.isBoosted = 1;
+                unit.boostTime = 1000;
+                floatingMessages.push(new floatingMessage('commence damage', unit.x, unit.y, 30, 'red'));
+               }
+            }
+            // if green powerup is selected, health gets reset to max
+            else if(current_resource.color == 'green'){
+                for( let unit of units){
+                unit.health = unit.maxHealth; 
+                floatingMessages.push(new floatingMessage('health restored', unit.x, unit.y, 30, 'green'));
+                }
+
+            }
+           // -- for future sprites -- use global var ****
+          // if blue powerup is selected, enemy movement should be slower
+
+             else if(current_resource.color == 'blue'){
+                for( let enemy of enemies){
+                   enemy.movement *= 0.5;
+                   enemy.isSlowed = 1;
+                   enemy.slowTime = 500; 
+                  // enemy.movement -= 0.1; 
+                   //enemy.dmg = 20;
+                    }
+                    floatingMessages.push(new floatingMessage('enemies slowed', resources[i].x, resources[i].y, 30, 'blue'))
+                    
+            }
+            else{
+                money += resources[i].amount;
+                floatingMessages.push(new floatingMessage('+' + resources[i].amount, resources[i].x, resources[i].y, 30, 'black'))
+                floatingMessages.push(new floatingMessage('+' + resources[i].amount, 250, 80, 30, 'gold'));
+            }
+
+            //check this.color and do different things based on what it was
+            //yellow -> money up -- basic so dont need to change
+            //red -> damage property for all -- certain amount of frames, need to revert change
+            //green -> restore health
+            //blue -> slow enemies
+            
+            
+            //messages
+
+            resources.splice(i, 1);
+            i--;
+        }
+    }
+}
+
 
 //utilities
 function printStuff(color, font_and_size, message, x, y) {
@@ -448,9 +518,11 @@ function handleGameStatus() {
   printStuff("gold", "30px Arial", "Resources: " + money, 180, 80);
   printStuff("gold", "30px Arial", "Score: " + score, 180, 30);
   if (endGame) {
+    theme.pause();
     printStuff("black", "90px Arial", "Game OVER", 135, 330);
   }
   if (score >= winningScore && enemies.length == 0) {
+    theme.pause();
     printStuff("black", "60px Arial", "LEVEL COMPLETE", 130, 300);
     printStuff(
       "black",
@@ -464,6 +536,7 @@ function handleGameStatus() {
     if (level + 1 < levelcap + 1) {
       level = level + 1;
     }
+    
     let player = {
       name: currUser,
       score: score,
@@ -503,8 +576,8 @@ canvas.addEventListener("click", function () {
 function animate() {
   if (!paused && !endGame) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "blue";
-    ctx.fillRect(0, 0, controlsBar.width, controlsBar.height);
+    //ctx.fillStyle = "blue";
+    //ctx.fillRect(0, 0, controlsBar.width, controlsBar.height);
     handleGameGrid();
     handleUnits();
     handleResources();
