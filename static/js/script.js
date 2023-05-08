@@ -135,13 +135,13 @@ function handleProjectiles() {
 
 //defenders
 const unit1attack = new Image();
-unit1attack.src = "/static/content/catJump.png";
+unit1attack.src = "/static/content/cat1Attack.png";
 const unit1idle = new Image();
-unit1idle.src = "/static/content/catIdle.png";
+unit1idle.src = "/static/content/cat1idle.png";
 const unit2attack = new Image();
-unit2attack.src = "/static/content/dogJump.png";
+unit2attack.src = "/static/content/cat2Attack.png";
 const unit2idle = new Image();
-unit2idle.src = "/static/content/dogIdle.png";
+unit2idle.src = "/static/content/cat2idle.png";
 class Unit {
   constructor(x, y) {
     this.x = x;
@@ -156,10 +156,10 @@ class Unit {
     this.frameX = 0;
     this.frameY = 0;
     this.canShoot = true;
-    this.spriteWidth = 544;
-    this.spriteHeight = 476;
+    this.spriteWidth = 240;
+    this.spriteHeight = 230;
     this.minFrame = 0;
-    this.maxFrame = 9;
+    this.maxFrame = 5;
     this.unitType = unit1idle;
     this.hasShot = false;
     this.chosenUnit = chosenUnit;
@@ -182,11 +182,11 @@ class Unit {
       this.height
     );
     if (this.chosenUnit == 1) {
-      this.maxFrame = 9;
+      this.maxFrame = 0;
       this.unitType = unit1idle; //unit 1 is idle
     }
     if (this.chosenUnit == 2) {
-      this.maxFrame = 9;
+      this.maxFrame = 0;
       this.unitType = unit2idle; //unit 2 is idle
     }
   }
@@ -204,12 +204,12 @@ class Unit {
         if (this.y == enemyVert[i]) {
           if (this.chosenUnit == 1) {
             //unit one is shooting
-            this.maxFrame = 10;
+            this.maxFrame = 1;
             this.unitType = unit1attack;
           }
           if (this.chosenUnit == 2) {
             //unit two is shooting
-            this.maxFrame = 7;
+            this.maxFrame = 1;
             this.unitType = unit2attack;
           }
           if (!this.hasShot) {
@@ -284,18 +284,24 @@ function chooseUnit() {
     select1stroke = "black";
     select2stroke = "black";
   }
+  // ctx.lineWidth = 1;
+  // ctx.fillStyle = "rgba(0,0,0,0.2)";
+  // ctx.fillRect(select1.x, select1.y, select1.width, select1.height);
+  // ctx.strokeStyle = select1stroke;
+  // ctx.strokeRect(select1.x, select1.y, select1.width, select1.height);
+  // ctx.drawImage(unit1idle, 0, 0, 544, 476, 0, 10, 544 / 6, 476 / 6);
   ctx.lineWidth = 1;
   ctx.fillStyle = "rgba(0,0,0,0.2)";
   ctx.fillRect(select1.x, select1.y, select1.width, select1.height);
   ctx.strokeStyle = select1stroke;
   ctx.strokeRect(select1.x, select1.y, select1.width, select1.height);
-  ctx.drawImage(unit1idle, 0, 0, 544, 476, 0, 10, 544 / 6, 476 / 6);
+  ctx.drawImage(unit1idle, 0, 0, 320, 210, 0, 10, 320 / 3, 210 / 3);
   if (level >= 2) {
     ctx.fillStyle = "rgba(0,0,0,0.2)";
     ctx.fillRect(select2.x, select2.y, select2.width, select2.height);
     ctx.strokeStyle = select2stroke;
     ctx.strokeRect(select2.x, select2.y, select2.width, select2.height);
-    ctx.drawImage(unit2idle, 0, 0, 544, 476, 80, 10, 544 / 6, 476 / 6);
+    ctx.drawImage(unit2idle, 0, 0, 320, 210, 80, 10, 320 / 3, 210 / 3);
   }
 }
 
@@ -334,10 +340,16 @@ function handleFloatingMessages() {
 }
 
 //enemies
+//enemies
 const enemyTypes = [];
 const enemy1 = new Image();
 enemy1.src = "/static/content/enemy1.png";
 enemyTypes.push(enemy1);
+
+const enemy2 = new Image();
+enemy2.src = "/static/content/enemy2.png";
+enemyTypes.push(enemy2);
+
 class Enemy {
   constructor(vert) {
     this.x = canvas.width;
@@ -354,18 +366,18 @@ class Enemy {
     this.isSlowed = 0;
     this.slowTime = 0;
     if (this.enemyType == enemy1) {
-      this.spriteWidth = 682;
-      this.spriteHeight = 474;
+      this.spriteWidth = 645;
+      this.spriteHeight = 640;
     } else if (this.enemyType == enemy2) {
-      this.spriteWidth = 547;
-      this.spriteHeight = 481;
+      this.spriteWidth = 484;
+      this.spriteHeight = 484;
     }
     //this.enemyType = enemyTypes[0];
 
     this.frameX = 0;
     this.frameY = 0;
     this.minFrame = 0;
-    this.maxFrame = 7;
+    this.maxFrame = 6;
   }
   update() {
     if (this.isSlowed) this.slowTime--;
@@ -539,6 +551,14 @@ function handleGameStatus() {
   if (endGame) {
     theme.pause();
     printStuff("black", "90px Arial", "Game OVER", 135, 330);
+    printStuff("black", "30px Arial", "Press R to Restart Level!", 135, 370);
+    printStuff(
+      "black",
+      "30px Arial",
+      "Press L to go to level select!",
+      135,
+      410
+    );
   }
   if (score >= winningScore && enemies.length == 0) {
     theme.pause();
@@ -549,6 +569,14 @@ function handleGameStatus() {
       "You win with " + score + " points! ",
       135,
       340
+    );
+    printStuff("black", "30px Arial", "Press R to Restart Level!", 135, 380);
+    printStuff(
+      "black",
+      "30px Arial",
+      "Press L to go to level select!",
+      135,
+      420
     );
     endGame = !endGame;
 
@@ -616,6 +644,7 @@ function animate() {
   } else {
     printStuff("black", "60px Arial", "PAUSED", 130, 300);
     printStuff("black", "30px Arial", "Press Esc to unpause!", 135, 340);
+    printStuff("black", "30px Arial", "Press R to Restart Level!", 135, 380);
   }
   if (!endGame) requestAnimationFrame(animate);
 }
@@ -649,6 +678,36 @@ document.addEventListener(
       return;
     }
     paused = !paused;
+  },
+  false
+);
+
+document.addEventListener(
+  "keydown",
+  (event) => {
+    var name = event.key;
+    if (name !== "r") {
+      // Do nothing.
+      return;
+    }
+    if (paused || endGame) {
+      location.reload();
+    }
+  },
+  false
+);
+
+document.addEventListener(
+  "keydown",
+  (event) => {
+    var name = event.key;
+    if (name !== "l") {
+      // Do nothing.
+      return;
+    }
+    if (endGame) {
+      location.href = "/levels";
+    }
   },
   false
 );

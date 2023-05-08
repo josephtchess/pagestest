@@ -15,11 +15,12 @@ def getplayers():
     cursor.execute("SELECT * FROM 'players'")
     results = cursor.fetchall()
     conn.close()
+    res = []
     for i in range(len(results)):
-        if results[i][2] != 3:
-            results.pop(i)
-    results.sort(key= lambda x:x[4], reverse=True)
-    return results
+        if results[i][2] == 3:
+            res.append(results[i])
+    res.sort(key= lambda x:x[4], reverse=True)
+    return res
 
 @app.route("/levels")
 def levelSelect():
@@ -41,7 +42,7 @@ def homePage():
                     cur.execute("SELECT name FROM players WHERE name=\"" + username +"\";")
                     res = cur.fetchall()
                     if not(len(res) > 0):
-                        cur.execute("INSERT into players (name, currency, level, time, score) values (?,?,?,?,?)",(username,1,1,0,1000))
+                        cur.execute("INSERT into players (name, currency, level, time, score) values (?,?,?,?,?)",(username,300,1,0,0))
                         session['user'] = username
                         con.commit()
                     ##print(username + " was not added")
@@ -135,22 +136,23 @@ def getLevel(user):
 def getTop():
 
     res =getplayers()
-    res = res[0:5]
-    testing = {"data" :
-        [ 
-            {	
-                "Group": "K",
-                "Title": "Top 5 Scores",
-                res[0][0]: res[0][4],
-                res[1][0]: res[1][4],
-                res[2][0]: res[2][4],
-                res[3][0]: res[3][4],
-                res[4][0]: res[4][4]
-            }
-        ]
-    }
-    if request.method == "GET":
-        return jsonify(testing)  # serialize and use JSON header
+    if(len(res) >= 5):
+        res = res[0:5]
+        testing = {"data" :
+            [ 
+                {	
+                    "Group": "K",
+                    "Title": "Top 5 Scores",
+                    res[0][0]: res[0][4],
+                    res[1][0]: res[1][4],
+                    res[2][0]: res[2][4],
+                    res[3][0]: res[3][4],
+                    res[4][0]: res[4][4]
+                }
+            ]
+        }
+        if request.method == "GET":
+            return jsonify(testing)  # serialize and use JSON header
 
 @app.route("/level/<num>")
 def setLevel(num):

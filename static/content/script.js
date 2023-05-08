@@ -6,6 +6,13 @@ canvas.height = 600;
 const currUser = document.getElementById("u1").innerHTML;
 console.log("user is " + currUser);
 
+let level = parseInt(document.getElementById("levelID").innerHTML);
+console.log("level is " + level);
+let lvlaval = 0;
+
+let theme = new Audio("/static/content/theme.mp3");
+theme.loop = true;
+theme.play();
 //global vars
 const cellSize = 100;
 const cellGap = 3;
@@ -16,11 +23,12 @@ const enemyVert = [];
 const projectiles = [];
 const resources = [];
 let money = 300;
+let paused = false;
 let frame = 0;
 let interval = 600;
 let endGame = false;
 let score = 0;
-let level = 1;
+let levelcap = 3;
 let chosenUnit = 1;
 const winningScore = 100;
 // mouse
@@ -82,12 +90,12 @@ function handleGameGrid() {
 
 //projectiles
 class Projectile {
-  constructor(x, y) {
+  constructor(x, y, dmg) {
     this.x = x;
     this.y = y;
     this.width = 10;
     this.height = 10;
-    this.dmg = 20;
+    this.dmg = dmg;
     this.speed = 5;
   }
   update() {
@@ -102,9 +110,11 @@ class Projectile {
 }
 function handleProjectiles() {
   for (let i = 0; i < projectiles.length; i++) {
+    //update and draw each projectile
     projectiles[i].update();
     projectiles[i].draw();
     for (let j = 0; j < enemies.length; j++) {
+      //iterate through enemies and if they make contact decrease health and remove projectile
       if (
         enemies[j] &&
         projectiles[i] &&
@@ -115,6 +125,7 @@ function handleProjectiles() {
         i--;
       }
     }
+    //remove projectile if out of range
     if (projectiles[i] && projectiles[i].x > canvas.width - cellSize) {
       projectiles.splice(i, 1);
       i--;
@@ -135,6 +146,8 @@ class Unit {
   constructor(x, y) {
     this.x = x;
     this.y = y;
+    this.dmg = 20;
+    this.ogdmg = 20;
     this.width = cellSize;
     this.height = cellSize;
     this.shooting = false;
@@ -150,17 +163,13 @@ class Unit {
     this.unitType = unit1idle;
     this.hasShot = false;
     this.chosenUnit = chosenUnit;
+    this.isBoosted = 0;
+    this.boostTime = 0;
   }
   draw() {
-    ctx.fillStyle = "blue";
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-    printStuff(
-      "gold",
-      "30px Arial",
-      Math.floor(this.health),
-      this.x + 15,
-      this.y + 25
-    );
+    //ctx.fillStyle = 'blue';
+    //ctx.fillRect(this.x, this.y, this.width, this.height);
+    //printStuff('gold', '30px Arial', Math.floor(this.health), this.x + 15, this.y + 25);
     ctx.drawImage(
       this.unitType,
       this.frameX * this.spriteWidth,
@@ -174,32 +183,41 @@ class Unit {
     );
     if (this.chosenUnit == 1) {
       this.maxFrame = 9;
-      this.unitType = unit1idle;
+      this.unitType = unit1idle; //unit 1 is idle
     }
     if (this.chosenUnit == 2) {
       this.maxFrame = 9;
-      this.unitType = unit2idle;
+      this.unitType = unit2idle; //unit 2 is idle
     }
   }
   update() {
     this.timer++;
+    if (this.isBoosted) this.boostTime--;
+    if (this.isBoosted && this.boostTime <= 0) {
+      this.dmg = this.ogdmg;
+      this.isBoosted = 0;
+    }
     if (this.canShoot) {
-      this.hasShot = false;
+      //some units might not shoot
+      this.hasShot = false; //flag to check if unit has shot enemy
       for (let i = 0; i < enemyVert.length; i++) {
         if (this.y == enemyVert[i]) {
           if (this.chosenUnit == 1) {
+            //unit one is shooting
             this.maxFrame = 10;
             this.unitType = unit1attack;
           }
           if (this.chosenUnit == 2) {
+            //unit two is shooting
             this.maxFrame = 7;
             this.unitType = unit2attack;
           }
           if (!this.hasShot) {
+            //shoot projectile
             if (this.timer % 100 == 0) {
               this.hasShot = true;
               projectiles.push(
-                new Projectile(this.x + cellSize / 2, this.y + 50)
+                new Projectile(this.x + cellSize / 2, this.y + 50, this.dmg)
               );
             }
           }
@@ -208,6 +226,7 @@ class Unit {
     }
 
     if (frame % 15 == 0) {
+      //update frame of sprite
       if (this.frameX < this.maxFrame) this.frameX++;
       else this.frameX = this.minFrame;
     }
@@ -215,18 +234,22 @@ class Unit {
 }
 function handleUnits() {
   for (let i = 0; i < units.length; i++) {
+    //draw and update units
     units[i].draw();
     units[i].update();
     for (let j = 0; j < enemies.length; j++) {
+      //iterate through enemies and do collision stuff
       if (units[i] && collision(units[i], enemies[j])) {
         units[i].health -= enemies[j].dmg;
         enemies[j].movement = 0;
       }
       if (units[i] && units[i].health <= 0) {
-        units.splice(i, 1);
-        i--;
         enemies[j].movement = enemies[j].speed;
       }
+    }
+    if (units[i].health <= 0) {
+      units.splice(i, 1);
+      i--;
     }
   }
 }
@@ -248,7 +271,7 @@ function chooseUnit() {
   let select2stroke = "black";
   if (collision(mouse, select1) && mouse.clicked) {
     chosenUnit = 1;
-  } else if (collision(mouse, select2) && mouse.clicked) {
+  } else if (level >= 2 && collision(mouse, select2) && mouse.clicked) {
     chosenUnit = 2;
   }
   if (chosenUnit == 1) {
@@ -267,11 +290,13 @@ function chooseUnit() {
   ctx.strokeStyle = select1stroke;
   ctx.strokeRect(select1.x, select1.y, select1.width, select1.height);
   ctx.drawImage(unit1idle, 0, 0, 544, 476, 0, 10, 544 / 6, 476 / 6);
-  ctx.fillStyle = "rgba(0,0,0,0.2)";
-  ctx.fillRect(select2.x, select2.y, select2.width, select2.height);
-  ctx.strokeStyle = select2stroke;
-  ctx.strokeRect(select2.x, select2.y, select2.width, select2.height);
-  ctx.drawImage(unit2idle, 0, 0, 544, 476, 80, 10, 544 / 6, 476 / 6);
+  if (level >= 2) {
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.fillRect(select2.x, select2.y, select2.width, select2.height);
+    ctx.strokeStyle = select2stroke;
+    ctx.strokeRect(select2.x, select2.y, select2.width, select2.height);
+    ctx.drawImage(unit2idle, 0, 0, 544, 476, 80, 10, 544 / 6, 476 / 6);
+  }
 }
 
 // Floating Messages
@@ -311,13 +336,8 @@ function handleFloatingMessages() {
 //enemies
 const enemyTypes = [];
 const enemy1 = new Image();
-enemy1.src = "enemy1.png";
+enemy1.src = "/static/content/enemy1.png";
 enemyTypes.push(enemy1);
-
-const enemy2 = new Image();
-enemy2.src = "enemy2.png";
-enemyTypes.push(enemy2);
-
 class Enemy {
   constructor(vert) {
     this.x = canvas.width;
@@ -331,6 +351,8 @@ class Enemy {
     this.movement = this.speed;
     this.maxHealth = this.health;
     this.enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+    this.isSlowed = 0;
+    this.slowTime = 0;
     if (this.enemyType == enemy1) {
       this.spriteWidth = 682;
       this.spriteHeight = 474;
@@ -339,12 +361,18 @@ class Enemy {
       this.spriteHeight = 481;
     }
     //this.enemyType = enemyTypes[0];
+
     this.frameX = 0;
     this.frameY = 0;
     this.minFrame = 0;
     this.maxFrame = 7;
   }
   update() {
+    if (this.isSlowed) this.slowTime--;
+    if (this.isSlowed && this.slowTime <= 0) {
+      this.isSlowed = 0;
+      this.movement = this.speed;
+    }
     this.x -= this.movement;
     if (frame % 10 == 0) {
       if (this.frameX < this.maxFrame) this.frameX++;
@@ -384,7 +412,7 @@ function handleEnemies() {
       i--;
     }
   }
-  if (frame % 200 == 0 && score < winningScore) {
+  if (frame % ((4 - level) * 100) == 0 && score < winningScore) {
     let vert = Math.floor(Math.random() * 5 + 1) * cellSize;
     enemies.push(new Enemy(vert));
     enemyVert.push(vert);
@@ -392,7 +420,9 @@ function handleEnemies() {
   }
 }
 //resources
-const amounts = [20, 30, 40];
+//resources
+const amounts = [30];
+let color_array = ["green", "blue", "red", "yellow"];
 class Resource {
   constructor() {
     this.x = Math.random() * (canvas.width - cellSize);
@@ -400,11 +430,17 @@ class Resource {
     this.width = cellSize * 0.5;
     this.height = cellSize * 0.5;
     this.amount = amounts[Math.floor(Math.random() * amounts.length)];
+    //randomize colors of the powerups given the colors of the array
+    this.color = color_array[Math.floor(Math.random() * color_array.length)];
   }
   draw() {
-    ctx.fillStyle = "yellow";
+    ctx.fillStyle = this.color;
     ctx.fillRect(this.x, this.y, this.width, this.height);
-    printStuff("black", "20px Arial", this.amount, this.x + 15, this.y + 25);
+    if (this.color == "yellow") {
+      ctx.fillStyle = "black";
+      ctx.font = "20px Arial";
+      ctx.fillText(this.amount, this.x + 15, this.y + 25);
+    }
   }
 }
 function handleResources() {
@@ -412,21 +448,78 @@ function handleResources() {
     resources.push(new Resource());
   }
   for (let i = 0; i < resources.length; i++) {
+    let current_resource = resources[i];
     resources[i].draw();
     if (resources[i] && mouse.x && mouse.y && collision(resources[i], mouse)) {
-      money += resources[i].amount;
-      floatingMessages.push(
-        new floatingMessage(
-          "+" + resources[i].amount,
-          resources[i].x,
-          resources[i].y,
-          30,
-          "black"
-        )
-      );
-      floatingMessages.push(
-        new floatingMessage("+" + resources[i].amount, 250, 80, 30, "gold")
-      );
+      // yellow powerup is the default and has already been set.
+
+      //for debugging
+      console.log(current_resource.color);
+
+      //if red powerup was collected, damage increased to 50 -- only for sprites when collecting red powerup -- for all spritres -- make "damage" - global var
+      if (current_resource.color == "red") {
+        // enemies[j].health -= projectiles[i].dmg;
+        for (let unit of units) {
+          unit.dmg = unit.dmg *= 2;
+          unit.isBoosted = 1;
+          unit.boostTime = 1000;
+          floatingMessages.push(
+            new floatingMessage("commence damage", unit.x, unit.y, 30, "red")
+          );
+        }
+      }
+      // if green powerup is selected, health gets reset to max
+      else if (current_resource.color == "green") {
+        for (let unit of units) {
+          unit.health = unit.maxHealth;
+          floatingMessages.push(
+            new floatingMessage("health restored", unit.x, unit.y, 30, "green")
+          );
+        }
+      }
+      // -- for future sprites -- use global var ****
+      // if blue powerup is selected, enemy movement should be slower
+      else if (current_resource.color == "blue") {
+        for (let enemy of enemies) {
+          enemy.movement *= 0.5;
+          enemy.isSlowed = 1;
+          enemy.slowTime = 500;
+          // enemy.movement -= 0.1;
+          //enemy.dmg = 20;
+        }
+        floatingMessages.push(
+          new floatingMessage(
+            "enemies slowed",
+            resources[i].x,
+            resources[i].y,
+            30,
+            "blue"
+          )
+        );
+      } else {
+        money += resources[i].amount;
+        floatingMessages.push(
+          new floatingMessage(
+            "+" + resources[i].amount,
+            resources[i].x,
+            resources[i].y,
+            30,
+            "black"
+          )
+        );
+        floatingMessages.push(
+          new floatingMessage("+" + resources[i].amount, 250, 80, 30, "gold")
+        );
+      }
+
+      //check this.color and do different things based on what it was
+      //yellow -> money up -- basic so dont need to change
+      //red -> damage property for all -- certain amount of frames, need to revert change
+      //green -> restore health
+      //blue -> slow enemies
+
+      //messages
+
       resources.splice(i, 1);
       i--;
     }
@@ -444,9 +537,11 @@ function handleGameStatus() {
   printStuff("gold", "30px Arial", "Resources: " + money, 180, 80);
   printStuff("gold", "30px Arial", "Score: " + score, 180, 30);
   if (endGame) {
+    theme.pause();
     printStuff("black", "90px Arial", "Game OVER", 135, 330);
   }
   if (score >= winningScore && enemies.length == 0) {
+    theme.pause();
     printStuff("black", "60px Arial", "LEVEL COMPLETE", 130, 300);
     printStuff(
       "black",
@@ -455,6 +550,34 @@ function handleGameStatus() {
       135,
       340
     );
+    endGame = !endGame;
+
+    let player = {};
+    if (level == lvlaval && level < levelcap) {
+      level = level + 1;
+    }
+    if (level == levelcap) {
+      player = {
+        name: currUser,
+        score: score,
+        level: level < lvlaval ? lvlaval : level,
+      };
+    } else {
+      player = {
+        name: currUser,
+        level: level < lvlaval ? lvlaval : level,
+      };
+    }
+
+    fetch(`${window.origin}/game`, {
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify(player),
+      cache: "no-cache",
+      headers: new Headers({
+        "content-type": "application/json",
+      }),
+    });
   }
 }
 
@@ -477,20 +600,27 @@ canvas.addEventListener("click", function () {
 });
 
 function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = "blue";
-  ctx.fillRect(0, 0, controlsBar.width, controlsBar.height);
-  handleGameGrid();
-  handleUnits();
-  handleResources();
-  handleProjectiles();
-  handleEnemies();
-  chooseUnit();
-  handleGameStatus();
-  handleFloatingMessages();
-  frame++;
+  if (!paused && !endGame) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //ctx.fillStyle = "blue";
+    //ctx.fillRect(0, 0, controlsBar.width, controlsBar.height);
+    handleGameGrid();
+    handleUnits();
+    handleResources();
+    handleProjectiles();
+    handleEnemies();
+    chooseUnit();
+    handleGameStatus();
+    handleFloatingMessages();
+    frame++;
+  } else {
+    printStuff("black", "60px Arial", "PAUSED", 130, 300);
+    printStuff("black", "30px Arial", "Press Esc to unpause!", 135, 340);
+  }
   if (!endGame) requestAnimationFrame(animate);
 }
+getMoney();
+getLevel();
 animate();
 
 function collision(first, second) {
@@ -509,3 +639,44 @@ function collision(first, second) {
 window.addEventListener("resize", function () {
   canvasPosition = canvas.getBoundingClientRect();
 });
+
+document.addEventListener(
+  "keydown",
+  (event) => {
+    var name = event.key;
+    if (name !== "Escape") {
+      // Do nothing.
+      return;
+    }
+    paused = !paused;
+  },
+  false
+);
+
+function getMoney() {
+  fetch(`/getMoney/${currUser}`)
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (text) {
+      console.log("GET response:");
+      console.log(text);
+      if (text > 0) {
+        money = text;
+      } else {
+        money = 300;
+      }
+    });
+}
+
+function getLevel() {
+  fetch(`/getLevel/${currUser}`)
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (text) {
+      console.log("GET response:");
+      console.log(text);
+      lvlaval = text;
+    });
+}

@@ -29,5 +29,5 @@ p {
   transform: translate(-50%, -50%);
   width: 1125px;
   height: 750px;
-  background-image: url("/static/content/Big.png");
+  background-image: url("/static/content/background.png");
 }
