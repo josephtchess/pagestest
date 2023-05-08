@@ -546,8 +546,9 @@ function printStuff(color, font_and_size, message, x, y) {
 }
 
 function handleGameStatus() {
+  //printStuff("gold", "30px Arial", "Seconds: " + floor(frame / 60), 300, 80);
   printStuff("gold", "30px Arial", "Resources: " + money, 180, 80);
-  printStuff("gold", "30px Arial", "Score: " + score, 180, 30);
+  printStuff("gold", "30px Arial", "Time: " + Math.floor(frame / 60), 180, 30);
   if (endGame) {
     theme.pause();
     printStuff("black", "90px Arial", "Game OVER", 135, 330);
@@ -651,7 +652,7 @@ function animate() {
 getMoney();
 getLevel();
 animate();
-
+sendScores();
 function collision(first, second) {
   if (
     !(
@@ -737,5 +738,16 @@ function getLevel() {
       console.log("GET response:");
       console.log(text);
       lvlaval = text;
+    });
+}
+
+function sendScores() {
+  fetch(`/getTop`)
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (text) {
+      console.log("GET response:");
+      console.log(text);
     });
 }

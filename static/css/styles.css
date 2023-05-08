@@ -1,5 +1,5 @@
 body {
-  background: pink;
+  background: #ffdbe6;
 }
 
 h1 {
@@ -30,4 +30,8 @@ p {
   width: 1125px;
   height: 750px;
   background-image: url("/static/content/background.png");
+}
+
+#currUser {
+  color: white;
 }

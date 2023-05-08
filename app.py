@@ -134,9 +134,9 @@ def getLevel(user):
 
 @app.route("/getTop",methods=["POST","GET"])
 def getTop():
-
     res =getplayers()
     if(len(res) >= 5):
+        apiUrl = "https://eope3o6d7z7e2cc.m.pipedream.net"
         res = res[0:5]
         testing = {"data" :
             [ 
@@ -151,8 +151,14 @@ def getTop():
                 }
             ]
         }
-        if request.method == "GET":
-            return jsonify(testing)  # serialize and use JSON header
+        x = requests.post(apiUrl, json = testing)
+        print(x.text)
+        message = {"message":"sent scores"}
+        return jsonify(message)
+    message = {"message":"did not sent scores"}
+    return jsonify(message)
+
+        
 
 @app.route("/level/<num>")
 def setLevel(num):

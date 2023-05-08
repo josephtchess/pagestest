@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="/static/css/level.css" />
+    <title>Level Select</title>
+  </head>
+  <body>
+    <p>The Current User is: <span id="u1">{{username}}</span></p>
+    <div class="screen">
+      <div class="menu">
+        <h1>SELECT A LEVEL</h1>
+        <div class="buttons">
+          <button
+            id="sel1"
+            style="width: 33.3%"
+            onclick="location.href='/level/1'"
+          >
+            Level One
+          </button>
+          <button
+            id="sel2"
+            style="width: 33.3%"
+            onclick="location.href='/level/2'"
+          >
+            Level Two
+          </button>
+          <button
+            id="sel3"
+            style="width: 33.3%"
+            onclick="location.href='/level/3'"
+          >
+            Level Three
+          </button>
+        </div>
+        <script src="/static/js/levels.js"></script>
+      </div>
+    </div>
+  </body>
+</html>

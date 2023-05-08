@@ -1,6 +1,5 @@
-body {
+#menu {
   background-image: url("/static/content/cat.PNG");
-  background-position: 450px 20px;
   background-repeat: no-repeat;
   background-size: 900px 600px;
   position: absolute;

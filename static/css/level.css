@@ -1,9 +1,7 @@
 body {
-  background-image: url("cat background.jpg");
   background-size: cover;
   margin: 0;
   font-family: "Roboto", sans-serif;
-  background-color: pink;
 }
 
 .screen {
@@ -18,7 +16,6 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   color: #000000;
-  margin-left: 4em;
 }
 
 .menu h1 {
@@ -33,6 +30,8 @@ body {
   padding: 10px 24px;
   cursor: pointer;
   float: left;
+  color: white;
+  font-weight: bold;
 }
 
 .buttons button:hover {
