@@ -25,11 +25,12 @@ const resources = [];
 let money = 300;
 let paused = false;
 let frame = 0;
-let interval = 600;
 let endGame = false;
 let score = 0;
 let levelcap = 3;
 let chosenUnit = 1;
+let maxTime = 90;
+if (level == 3) maxTime = Number.MAX_SAFE_INTEGER;
 const winningScore = 100;
 // mouse
 const mouse = {
@@ -424,11 +425,10 @@ function handleEnemies() {
       i--;
     }
   }
-  if (frame % ((4 - level) * 100) == 0 && score < winningScore) {
+  if (frame % ((4 - level) * 100) == 0 && Math.floor(frame/60) < maxTime) {
     let vert = Math.floor(Math.random() * 5 + 1) * cellSize;
     enemies.push(new Enemy(vert));
     enemyVert.push(vert);
-    if (interval > 120) interval -= 50;
   }
 }
 //resources
@@ -561,13 +561,14 @@ function handleGameStatus() {
       410
     );
   }
-  if (score >= winningScore && enemies.length == 0) {
+  if (Math.floor(frame/60) >= maxTime && enemies.length == 0) {
     theme.pause();
+    score = maxTime;
     printStuff("black", "60px Arial", "LEVEL COMPLETE", 130, 300);
     printStuff(
       "black",
       "30px Arial",
-      "You win with " + score + " points! ",
+      "You survived " + score + " seconds! ",
       135,
       340
     );
@@ -627,7 +628,7 @@ canvas.addEventListener("click", function () {
     );
   }
 });
-
+const fps = 60;
 function animate() {
   if (!paused && !endGame) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -647,7 +648,11 @@ function animate() {
     printStuff("black", "30px Arial", "Press Esc to unpause!", 135, 340);
     printStuff("black", "30px Arial", "Press R to Restart Level!", 135, 380);
   }
-  if (!endGame) requestAnimationFrame(animate);
+  if (!endGame) {
+    setTimeout(() => {
+      requestAnimationFrame(animate);
+    }, 1000 / fps);
+  }
 }
 getMoney();
 getLevel();
