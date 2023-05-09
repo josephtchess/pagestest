@@ -57,9 +57,13 @@ def homePage():
 
 @app.route("/game", methods=["POST","GET"])
 def showGame():
+    print("in game")
     if request.method == "POST":
+        print("got response")
         username = request.get_json()
+        print(username)
         if type(username) is dict:
+            print("about to update")
             updateScore(username)
     else:
         print("Your mom")

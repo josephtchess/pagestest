@@ -25,11 +25,12 @@ const resources = [];
 let money = 300;
 let paused = false;
 let frame = 0;
-let interval = 600;
 let endGame = false;
 let score = 0;
 let levelcap = 3;
 let chosenUnit = 1;
+let maxTime = 90;
+if (level == 3) maxTime = Number.MAX_SAFE_INTEGER;
 const winningScore = 100;
 // mouse
 const mouse = {
@@ -152,6 +153,7 @@ class Unit {
     this.height = cellSize;
     this.shooting = false;
     this.health = 100;
+    this.maxHealth = this.health;
     this.timer = 0;
     this.frameX = 0;
     this.frameY = 0;
@@ -169,7 +171,13 @@ class Unit {
   draw() {
     //ctx.fillStyle = 'blue';
     //ctx.fillRect(this.x, this.y, this.width, this.height);
-    //printStuff('gold', '30px Arial', Math.floor(this.health), this.x + 15, this.y + 25);
+    // printStuff(
+    //   "black",
+    //   "30px Arial",
+    //   Math.floor(this.health),
+    //   this.x + 15,
+    //   this.y + 25
+    // );
     ctx.drawImage(
       this.unitType,
       this.frameX * this.spriteWidth,
@@ -424,11 +432,10 @@ function handleEnemies() {
       i--;
     }
   }
-  if (frame % ((4 - level) * 100) == 0 && score < winningScore) {
+  if (frame % ((4 - level) * 100) == 0 && Math.floor(frame / 60) < maxTime) {
     let vert = Math.floor(Math.random() * 5 + 1) * cellSize;
     enemies.push(new Enemy(vert));
     enemyVert.push(vert);
-    if (interval > 120) interval -= 50;
   }
 }
 //resources
@@ -483,6 +490,8 @@ function handleResources() {
       // if green powerup is selected, health gets reset to max
       else if (current_resource.color == "green") {
         for (let unit of units) {
+          console.log(unit.health, "is the health");
+          console.log(unit.maxHealth, "is the max health");
           unit.health = unit.maxHealth;
           floatingMessages.push(
             new floatingMessage("health restored", unit.x, unit.y, 30, "green")
@@ -550,8 +559,18 @@ function handleGameStatus() {
   printStuff("gold", "30px Arial", "Resources: " + money, 180, 80);
   printStuff("gold", "30px Arial", "Time: " + Math.floor(frame / 60), 180, 30);
   if (endGame) {
+    score = Math.floor(frame / 60);
+    ctx.fillStyle = "#ffdbe6";
+    ctx.fillRect(0, 100, 900, 500);
     theme.pause();
     printStuff("black", "90px Arial", "Game OVER", 135, 330);
+    printStuff(
+      "black",
+      "30px Arial",
+      "You survived " + score + " seconds! ",
+      135,
+      340
+    );
     printStuff("black", "30px Arial", "Press R to Restart Level!", 135, 370);
     printStuff(
       "black",
@@ -560,27 +579,8 @@ function handleGameStatus() {
       135,
       410
     );
-  }
-  if (score >= winningScore && enemies.length == 0) {
-    theme.pause();
-    printStuff("black", "60px Arial", "LEVEL COMPLETE", 130, 300);
-    printStuff(
-      "black",
-      "30px Arial",
-      "You win with " + score + " points! ",
-      135,
-      340
-    );
-    printStuff("black", "30px Arial", "Press R to Restart Level!", 135, 380);
-    printStuff(
-      "black",
-      "30px Arial",
-      "Press L to go to level select!",
-      135,
-      420
-    );
-    endGame = !endGame;
 
+    console.log(level, " is level");
     let player = {};
     if (level == lvlaval && level < levelcap) {
       level = level + 1;
@@ -597,6 +597,7 @@ function handleGameStatus() {
         level: level < lvlaval ? lvlaval : level,
       };
     }
+    console.log(player, " is being sent");
 
     fetch(`${window.origin}/game`, {
       method: "POST",
@@ -607,6 +608,29 @@ function handleGameStatus() {
         "content-type": "application/json",
       }),
     });
+  }
+  if (Math.floor(frame / 60) >= maxTime && enemies.length == 0) {
+    theme.pause();
+    score = Math.floor(frame / 60);
+    ctx.fillStyle = "#ffdbe6";
+    ctx.fillRect(0, 100, 900, 500);
+    printStuff("black", "60px Arial", "LEVEL COMPLETE", 130, 300);
+    printStuff(
+      "black",
+      "30px Arial",
+      "You survived " + score + " seconds! ",
+      135,
+      340
+    );
+    printStuff("black", "30px Arial", "Press R to Restart Level!", 135, 380);
+    printStuff(
+      "black",
+      "30px Arial",
+      "Press L to go to level select!",
+      135,
+      420
+    );
+    endGame = !endGame;
   }
 }
 
@@ -627,7 +651,7 @@ canvas.addEventListener("click", function () {
     );
   }
 });
-
+const fps = 60;
 function animate() {
   if (!paused && !endGame) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -643,11 +667,17 @@ function animate() {
     handleFloatingMessages();
     frame++;
   } else {
+    ctx.fillStyle = "#ffdbe6";
+    ctx.fillRect(0, 100, 900, 500);
     printStuff("black", "60px Arial", "PAUSED", 130, 300);
     printStuff("black", "30px Arial", "Press Esc to unpause!", 135, 340);
     printStuff("black", "30px Arial", "Press R to Restart Level!", 135, 380);
   }
-  if (!endGame) requestAnimationFrame(animate);
+  if (!endGame) {
+    setTimeout(() => {
+      requestAnimationFrame(animate);
+    }, 1000 / fps);
+  }
 }
 getMoney();
 getLevel();
