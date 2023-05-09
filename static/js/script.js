@@ -167,6 +167,16 @@ class Unit {
     this.chosenUnit = chosenUnit;
     this.isBoosted = 0;
     this.boostTime = 0;
+    /*
+    if (this.chosenUnit == 1){
+      this.ogdmg = 20;
+      this.dmg = this.ogdmg;
+    }
+    if (this.chosenUnit == 2){
+      this.ogdmg = 40;
+      this.dmg = this.ogdmg;
+    }
+    */
   }
   draw() {
     //ctx.fillStyle = 'blue';
@@ -651,6 +661,14 @@ canvas.addEventListener("click", function () {
     if (units[i].x == gridPositionX && units[i].y == gridPositionY) return;
   }
   let UnitCost = 50;
+  /*
+  if (chosenUnit == 1){
+    UnitCost = 50;
+  }
+  if (chosenUnit == 2){
+    UnitCost = 100;
+  }
+  */
   if (money >= UnitCost) {
     units.push(new Unit(gridPositionX, gridPositionY));
     money -= UnitCost;
