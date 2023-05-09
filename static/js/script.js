@@ -416,6 +416,8 @@ class Enemy {
     );
   }
 }
+let spawnRate = (4-level)*100;
+let changed = false;
 function handleEnemies() {
   for (let i = 0; i < enemies.length; i++) {
     enemies[i].update();
@@ -432,7 +434,14 @@ function handleEnemies() {
       i--;
     }
   }
-  if (frame % ((4 - level) * 100) == 0 && Math.floor(frame / 60) < maxTime) {
+  if (frame/60 % 30 == 0 && frame/60 != 0 && !changed) {
+    spawnRate = Math.floor(spawnRate * 2/3);
+    changed = true;
+  }
+  if (frame/61 % 30 == 0 && frame/61 != 0 && changed) {
+    changed = false;
+  }
+  if (frame % spawnRate == 0 && Math.floor(frame / 60) < maxTime) {
     let vert = Math.floor(Math.random() * 5 + 1) * cellSize;
     enemies.push(new Enemy(vert));
     enemyVert.push(vert);
@@ -440,7 +449,7 @@ function handleEnemies() {
 }
 //resources
 //resources
-const amounts = [30];
+const amounts = [50];
 let color_array = ["green", "blue", "red", "yellow"];
 class Resource {
   constructor() {
@@ -609,7 +618,7 @@ function handleGameStatus() {
       }),
     });
   }
-  if (Math.floor(frame / 60) >= maxTime && enemies.length == 0) {
+  if (level != 3 && Math.floor(frame / 60) >= maxTime && enemies.length == 0) {
     theme.pause();
     score = Math.floor(frame / 60);
     ctx.fillStyle = "#ffdbe6";
@@ -641,7 +650,7 @@ canvas.addEventListener("click", function () {
   for (let i = 0; i < units.length; i++) {
     if (units[i].x == gridPositionX && units[i].y == gridPositionY) return;
   }
-  let UnitCost = 100;
+  let UnitCost = 50;
   if (money >= UnitCost) {
     units.push(new Unit(gridPositionX, gridPositionY));
     money -= UnitCost;
