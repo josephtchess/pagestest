@@ -88,15 +88,14 @@ function handleGameGrid() {
     gameGrid[index].draw();
   }
 }
-const spear = new Image();
-spear.src = "/static/content/spear.PNG";
+
 //projectiles
 class Projectile {
   constructor(x, y, dmg) {
     this.x = x;
-    this.y = y - 40;
-    this.width = 100;
-    this.height = 70;
+    this.y = y;
+    this.width = 10;
+    this.height = 10;
     this.dmg = dmg;
     this.speed = 5;
   }
@@ -104,13 +103,10 @@ class Projectile {
     this.x += this.speed;
   }
   draw() {
-    ctx.drawImage(spear, this.x, this.y, this.width, this.height);
-    /*
     ctx.fillStyle = "black";
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.width, 0, Math.PI * 2);
     ctx.fill();
-    */
   }
 }
 function handleProjectiles() {
@@ -151,6 +147,8 @@ class Unit {
   constructor(x, y) {
     this.x = x;
     this.y = y;
+    this.dmg = 20;
+    this.ogdmg = 20;
     this.width = cellSize;
     this.height = cellSize;
     this.shooting = false;
@@ -169,13 +167,6 @@ class Unit {
     this.chosenUnit = chosenUnit;
     this.isBoosted = 0;
     this.boostTime = 0;
-    if (this.chosenUnit == 1) {
-      this.ogdmg = 20;
-    }
-    if (this.chosenUnit == 2) {
-      this.ogdmg = 40;
-    }
-    this.dmg = this.ogdmg;
   }
   draw() {
     //ctx.fillStyle = 'blue';
@@ -231,7 +222,7 @@ class Unit {
           }
           if (!this.hasShot) {
             //shoot projectile
-            if (this.frameX == 1 && this.timer % 45 == 0) {
+            if (this.timer % 100 == 0) {
               this.hasShot = true;
               projectiles.push(
                 new Projectile(this.x + cellSize / 2, this.y + 50, this.dmg)
@@ -425,8 +416,6 @@ class Enemy {
     );
   }
 }
-let spawnRate = (4 - level) * 100;
-let changed = false;
 function handleEnemies() {
   for (let i = 0; i < enemies.length; i++) {
     enemies[i].update();
@@ -443,18 +432,7 @@ function handleEnemies() {
       i--;
     }
   }
-  if ((frame / 60) % 30 == 0 && frame / 60 != 0 && !changed) {
-    spawnRate = Math.floor((spawnRate * 2) / 3);
-    changed = true;
-  }
-  if ((frame / 61) % 30 == 0 && frame / 61 != 0 && changed) {
-    changed = false;
-  }
-  //console.log("Spawn rate is ", spawnRate);
-  if (spawnRate == 0) {
-    spawnRate = 1;
-  }
-  if (frame % spawnRate == 0 && Math.floor(frame / 60) < maxTime) {
+  if (frame % ((4 - level) * 100) == 0 && Math.floor(frame / 60) < maxTime) {
     let vert = Math.floor(Math.random() * 5 + 1) * cellSize;
     enemies.push(new Enemy(vert));
     enemyVert.push(vert);
@@ -462,7 +440,7 @@ function handleEnemies() {
 }
 //resources
 //resources
-const amounts = [50];
+const amounts = [30];
 let color_array = ["green", "blue", "red", "yellow"];
 class Resource {
   constructor() {
@@ -551,7 +529,7 @@ function handleResources() {
           )
         );
         floatingMessages.push(
-          new floatingMessage("+" + resources[i].amount, 400, 80, 30, "gold")
+          new floatingMessage("+" + resources[i].amount, 250, 80, 30, "gold")
         );
       }
 
@@ -582,7 +560,7 @@ function handleGameStatus() {
   printStuff("gold", "30px Arial", "Time: " + Math.floor(frame / 60), 180, 30);
   if (endGame) {
     score = Math.floor(frame / 60);
-    ctx.fillStyle = "#e9b1a8";
+    ctx.fillStyle = "#ffdbe6";
     ctx.fillRect(0, 100, 900, 500);
     theme.pause();
     printStuff("black", "90px Arial", "Game OVER", 135, 330);
@@ -591,19 +569,22 @@ function handleGameStatus() {
       "30px Arial",
       "You survived " + score + " seconds! ",
       135,
-      370
+      340
     );
-    printStuff("black", "30px Arial", "Press R to Restart Level!", 135, 410);
+    printStuff("black", "30px Arial", "Press R to Restart Level!", 135, 370);
     printStuff(
       "black",
       "30px Arial",
       "Press L to go to level select!",
       135,
-      450
+      410
     );
 
     console.log(level, " is level");
     let player = {};
+    if (level == lvlaval && level < levelcap) {
+      level = level + 1;
+    }
     if (level == levelcap) {
       player = {
         name: currUser,
@@ -611,9 +592,6 @@ function handleGameStatus() {
         level: level < lvlaval ? lvlaval : level,
       };
     } else {
-      if (level == lvlaval && level < levelcap) {
-        level = level + 1;
-      }
       player = {
         name: currUser,
         level: level < lvlaval ? lvlaval : level,
@@ -631,10 +609,10 @@ function handleGameStatus() {
       }),
     });
   }
-  if (level != 3 && Math.floor(frame / 60) >= maxTime && enemies.length == 0) {
+  if (Math.floor(frame / 60) >= maxTime && enemies.length == 0) {
     theme.pause();
     score = Math.floor(frame / 60);
-    ctx.fillStyle = "#e9b1a8";
+    ctx.fillStyle = "#ffdbe6";
     ctx.fillRect(0, 100, 900, 500);
     printStuff("black", "60px Arial", "LEVEL COMPLETE", 130, 300);
     printStuff(
@@ -652,34 +630,6 @@ function handleGameStatus() {
       135,
       420
     );
-    console.log(level, " is level");
-    let player = {};
-    if (level == levelcap) {
-      player = {
-        name: currUser,
-        score: score,
-        level: level < lvlaval ? lvlaval : level,
-      };
-    } else {
-      if (level == lvlaval && level < levelcap) {
-        level = level + 1;
-      }
-      player = {
-        name: currUser,
-        level: level < lvlaval ? lvlaval : level,
-      };
-    }
-    console.log(player, " is being sent");
-
-    fetch(`${window.origin}/game`, {
-      method: "POST",
-      credentials: "include",
-      body: JSON.stringify(player),
-      cache: "no-cache",
-      headers: new Headers({
-        "content-type": "application/json",
-      }),
-    });
     endGame = !endGame;
   }
 }
@@ -691,14 +641,7 @@ canvas.addEventListener("click", function () {
   for (let i = 0; i < units.length; i++) {
     if (units[i].x == gridPositionX && units[i].y == gridPositionY) return;
   }
-  let UnitCost = 50;
-
-  if (chosenUnit == 1) {
-    UnitCost = 50;
-  }
-  if (chosenUnit == 2) {
-    UnitCost = 100;
-  }
+  let UnitCost = 100;
   if (money >= UnitCost) {
     units.push(new Unit(gridPositionX, gridPositionY));
     money -= UnitCost;
@@ -724,7 +667,7 @@ function animate() {
     handleFloatingMessages();
     frame++;
   } else {
-    ctx.fillStyle = "#e9b1a8";
+    ctx.fillStyle = "#ffdbe6";
     ctx.fillRect(0, 100, 900, 500);
     printStuff("black", "60px Arial", "PAUSED", 130, 300);
     printStuff("black", "30px Arial", "Press Esc to unpause!", 135, 340);
@@ -736,11 +679,10 @@ function animate() {
     }, 1000 / fps);
   }
 }
-//getMoney();
+getMoney();
 getLevel();
 animate();
 sendScores();
-
 function collision(first, second) {
   if (
     !(
@@ -801,21 +743,21 @@ document.addEventListener(
   false
 );
 
-// function getMoney() {
-//   fetch(`/getMoney/${currUser}`)
-//     .then(function (response) {
-//       return response.json();
-//     })
-//     .then(function (text) {
-//       console.log("GET response:");
-//       console.log(text);
-//       if (text > 0) {
-//         money = text;
-//       } else {
-//         money = 300;
-//       }
-//     });
-// }
+function getMoney() {
+  fetch(`/getMoney/${currUser}`)
+    .then(function (response) {
+      return response.json();
+    })
+    .then(function (text) {
+      console.log("GET response:");
+      console.log(text);
+      if (text > 0) {
+        money = text;
+      } else {
+        money = 300;
+      }
+    });
+}
 
 function getLevel() {
   fetch(`/getLevel/${currUser}`)

@@ -15,11 +15,12 @@ def getplayers():
     cursor.execute("SELECT * FROM 'players'")
     results = cursor.fetchall()
     conn.close()
+    print(results)
     res = []
     for i in range(len(results)):
-        if results[i][2] == 3:
+        if results[i][1] == 3:
             res.append(results[i])
-    res.sort(key= lambda x:x[4], reverse=True)
+    res.sort(key= lambda x:x[2], reverse=True)
     return res
 
 @app.route("/levels")
@@ -39,10 +40,12 @@ def homePage():
             try:
                 with sqlite3.connect("gamedata.db") as con:  
                     cur = con.cursor()
+                    username.lower()
+                    print(username)
                     cur.execute("SELECT name FROM players WHERE name=\"" + username +"\";")
                     res = cur.fetchall()
                     if not(len(res) > 0):
-                        cur.execute("INSERT into players (name, currency, level, time, score) values (?,?,?,?,?)",(username,300,1,0,0))
+                        cur.execute("INSERT into players (name, level, time) values (?,?,?)",(username,1,0))
                         session['user'] = username
                         con.commit()
                     ##print(username + " was not added")
@@ -50,8 +53,8 @@ def homePage():
             except:
                 con.rollback()
             con.close()
-
-
+    else:
+        session['user'] = ""
     return render_template("start.html")
 
 
@@ -65,22 +68,6 @@ def showGame():
         if type(username) is dict:
             print("about to update")
             updateScore(username)
-    else:
-        print("Your mom")
-        # else:
-        #     try:
-        #         with sqlite3.connect("gamedata.db") as con:  
-        #             cur = con.cursor()
-        #             cur.execute("SELECT name FROM players WHERE name=\"" + username +"\";")
-        #             res = cur.fetchall()
-        #             if not(len(res) > 0):
-        #                 cur.execute("INSERT into players (name, currency, level, time, score) values (?,?,?,?,?)",(username,420,1,0,0))  
-        #                 con.commit()
-        #             print(username + " was not added")
-                    
-        #     except:
-        #         con.rollback()
-        #     con.close()
     return render_template("index.html",username=session['user'],currLevel=session["level"])
 
 
@@ -91,10 +78,13 @@ def updateScore(player):
             cur = con.cursor()
             cur.execute("SELECT * FROM players WHERE name=\"" + player["name"] +"\";")
             res = cur.fetchall()
-            if "score" in player and player["score"] > res[0][4]:
-                cmm = "UPDATE players SET score = " + str(player["score"]) + " WHERE name =\"" + player["name"] +"\";"
+            #print("before if")
+            if "score" in player and player["score"] > res[0][2]:
+                cmm = "UPDATE players SET time = " + str(player["score"]) + " WHERE name =\"" + player["name"] +"\";"
                 cur.execute(cmm)
                 con.commit()
+            #print("after if") 
+            #print(str(player["level"]))
             cmm = "UPDATE players SET level = " + str(player["level"]) + " WHERE name =\"" + player["name"] +"\";"
             cur.execute(cmm)
             con.commit()
@@ -111,17 +101,17 @@ def showboard():
     return render_template("board.html",res=res)
 
 
-@app.route("/getMoney/<user>")
-def getMoney(user):
-    print(user)
-    con = sqlite3.connect("gamedata.db")
-    cur = con.cursor()
-    cur.execute("SELECT * FROM players WHERE name=\"" + user +"\";")
-    res = cur.fetchall()
-    print(res)
-    print(res[0][1])
-    message = {'greeting':'Hello from Flask!' + user}
-    return jsonify(res[0][1])  # serialize and use JSON header
+# @app.route("/getMoney/<user>")
+# def getMoney(user):
+#     print(user)
+#     con = sqlite3.connect("gamedata.db")
+#     cur = con.cursor()
+#     cur.execute("SELECT * FROM players WHERE name=\"" + user +"\";")
+#     res = cur.fetchall()
+#     print(res)
+#     print(res[0][1])
+#     message = {'greeting':'Hello from Flask!' + user}
+#     return jsonify(res[0][1])  # serialize and use JSON header
 
 @app.route("/getLevel/<user>")
 def getLevel(user):
@@ -133,7 +123,7 @@ def getLevel(user):
     print(res)
     print(res[0][1])
     message = {'greeting':'Hello from Flask!' + user}
-    return jsonify(res[0][2])  # serialize and use JSON header
+    return jsonify(res[0][1])  # serialize and use JSON header
 
 
 @app.route("/getTop",methods=["POST","GET"])
@@ -147,22 +137,43 @@ def getTop():
                 {	
                     "Group": "K",
                     "Title": "Top 5 Scores",
-                    res[0][0]: res[0][4],
-                    res[1][0]: res[1][4],
-                    res[2][0]: res[2][4],
-                    res[3][0]: res[3][4],
-                    res[4][0]: res[4][4]
+                    res[0][0]: res[0][2],
+                    res[1][0]: res[1][2],
+                    res[2][0]: res[2][2],
+                    res[3][0]: res[3][2],
+                    res[4][0]: res[4][2]
                 }
             ]
         }
         x = requests.post(apiUrl, json = testing)
         print(x.text)
+        print(x.status_code)
         message = {"message":"sent scores"}
         return jsonify(message)
     message = {"message":"did not sent scores"}
     return jsonify(message)
 
-        
+
+@app.route("/testAPI",methods=["POST","GET"]) 
+def apiTest():
+    res =getplayers()
+    if(len(res) >= 5):
+        apiUrl = "https://eope3o6d7z7e2cc.m.pipedream.net"
+        res = res[0:5]
+        testing = {"data" :
+            [ 
+                {	
+                    "Group": "K",
+                    "Title": "Top 5 Scores",
+                    res[0][0]: res[0][2],
+                    res[1][0]: res[1][2],
+                    res[2][0]: res[2][2],
+                    res[3][0]: res[3][2],
+                    res[4][0]: res[4][2]
+                }
+            ]
+        }
+        return jsonify(testing)
 
 @app.route("/level/<num>")
 def setLevel(num):
