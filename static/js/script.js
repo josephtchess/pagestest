@@ -10,7 +10,7 @@ let level = parseInt(document.getElementById("levelID").innerHTML);
 console.log("level is " + level);
 let lvlaval = 0;
 
-let theme = new Audio("/static/content/theme.mp3");
+let theme = new Audio("/static/content/cat_theme.wav");
 theme.loop = true;
 theme.play();
 //global vars
