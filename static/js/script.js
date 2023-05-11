@@ -90,21 +90,24 @@ function handleGameGrid() {
 }
 const spear = new Image();
 spear.src = "/static/content/spear.PNG";
+const spear2 = new Image();
+spear2.src = "/static/content/spear2.png";
 //projectiles
 class Projectile {
-  constructor(x, y, dmg) {
+  constructor(x, y, dmg, sType) {
     this.x = x;
     this.y = y - 40;
     this.width = 100;
     this.height = 70;
     this.dmg = dmg;
     this.speed = 5;
+    this.sType = sType;
   }
   update() {
     this.x += this.speed;
   }
   draw() {
-    ctx.drawImage(spear, this.x, this.y, this.width, this.height);
+    ctx.drawImage(this.sType, this.x, this.y, this.width, this.height);
     /*
     ctx.fillStyle = "black";
     ctx.beginPath();
@@ -171,9 +174,11 @@ class Unit {
     this.boostTime = 0;
     if (this.chosenUnit == 1) {
       this.ogdmg = 20;
+      this.sType = spear;
     }
     if (this.chosenUnit == 2) {
       this.ogdmg = 40;
+      this.sType = spear2;
     }
     this.dmg = this.ogdmg;
   }
@@ -234,7 +239,7 @@ class Unit {
             if (this.frameX == 1 && this.timer % 45 == 0) {
               this.hasShot = true;
               projectiles.push(
-                new Projectile(this.x + cellSize / 2, this.y + 50, this.dmg)
+                new Projectile(this.x + cellSize / 2, this.y + 50, this.dmg, this.sType)
               );
             }
           }
@@ -377,15 +382,16 @@ class Enemy {
     this.health = 100;
     this.timer = 0;
     this.maxHealth = this.health;
-    if (level >= 2) {
-      this.enemyType =
-        enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
-    } else {
+    if (level >= 2){
+      this.enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+    }
+    else {
       this.enemyType = enemy1;
     }
-    if (this.enemyType == enemy1) {
+    if (this.enemyType == enemy1){
       this.speed = 0.5;
-    } else {
+    }
+    else{
       this.speed = 0.75;
     }
     this.movement = this.speed;
@@ -738,13 +744,6 @@ function animate() {
     printStuff("black", "60px Arial", "PAUSED", 130, 300);
     printStuff("black", "30px Arial", "Press Esc to unpause!", 135, 340);
     printStuff("black", "30px Arial", "Press R to Restart Level!", 135, 380);
-    printStuff(
-      "black",
-      "30px Arial",
-      "Press L to go to level select!",
-      135,
-      420
-    );
   }
   if (!endGame) {
     setTimeout(() => {
@@ -810,7 +809,7 @@ document.addEventListener(
       // Do nothing.
       return;
     }
-    if (endGame || paused) {
+    if (endGame) {
       location.href = "/levels";
     }
   },
