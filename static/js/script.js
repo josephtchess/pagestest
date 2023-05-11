@@ -744,6 +744,7 @@ function animate() {
     printStuff("black", "60px Arial", "PAUSED", 130, 300);
     printStuff("black", "30px Arial", "Press Esc to unpause!", 135, 340);
     printStuff("black", "30px Arial", "Press R to Restart Level!", 135, 380);
+    printStuff("black", "30px Arial", "Press L for level select", 135, 420);
   }
   if (!endGame) {
     setTimeout(() => {
@@ -815,20 +816,7 @@ document.addEventListener(
   },
   false
 );
-document.addEventListener(
-  "keydown",
-  (event) => {
-    var name = event.key;
-    if (name !== "l") {
-      // Do nothing.
-      return;
-    }
-    if (endGame) {
-      location.href = "/levels";
-    }
-  },
-  false
-);
+
 
 // function getMoney() {
 //   fetch(`/getMoney/${currUser}`)
