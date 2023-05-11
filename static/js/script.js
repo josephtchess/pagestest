@@ -809,6 +809,20 @@ document.addEventListener(
       // Do nothing.
       return;
     }
+    if (endGame || paused) {
+      location.href = "/levels";
+    }
+  },
+  false
+);
+document.addEventListener(
+  "keydown",
+  (event) => {
+    var name = event.key;
+    if (name !== "l") {
+      // Do nothing.
+      return;
+    }
     if (endGame) {
       location.href = "/levels";
     }
