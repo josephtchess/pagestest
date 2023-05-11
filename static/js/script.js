@@ -377,16 +377,15 @@ class Enemy {
     this.health = 100;
     this.timer = 0;
     this.maxHealth = this.health;
-    if (level >= 2){
-      this.enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
-    }
-    else {
+    if (level >= 2) {
+      this.enemyType =
+        enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+    } else {
       this.enemyType = enemy1;
     }
-    if (this.enemyType == 1){
+    if (this.enemyType == 1) {
       this.speed = 0.5;
-    }
-    else{
+    } else {
       this.speed = 0.75;
     }
     this.movement = this.speed;
@@ -739,6 +738,13 @@ function animate() {
     printStuff("black", "60px Arial", "PAUSED", 130, 300);
     printStuff("black", "30px Arial", "Press Esc to unpause!", 135, 340);
     printStuff("black", "30px Arial", "Press R to Restart Level!", 135, 380);
+    printStuff(
+      "black",
+      "30px Arial",
+      "Press L to go to level select!",
+      135,
+      420
+    );
   }
   if (!endGame) {
     setTimeout(() => {
@@ -804,7 +810,7 @@ document.addEventListener(
       // Do nothing.
       return;
     }
-    if (endGame) {
+    if (endGame || paused) {
       location.href = "/levels";
     }
   },
