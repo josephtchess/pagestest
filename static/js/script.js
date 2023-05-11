@@ -383,7 +383,7 @@ class Enemy {
     } else {
       this.enemyType = enemy1;
     }
-    if (this.enemyType == 1) {
+    if (this.enemyType == enemy1) {
       this.speed = 0.5;
     } else {
       this.speed = 0.75;
