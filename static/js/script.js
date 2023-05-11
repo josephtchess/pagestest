@@ -376,10 +376,20 @@ class Enemy {
     this.height = cellSize;
     this.health = 100;
     this.timer = 0;
-    this.speed = Math.random() * 0.2 + 0.5;
-    this.movement = this.speed;
     this.maxHealth = this.health;
-    this.enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+    if (level >= 2){
+      this.enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+    }
+    else {
+      this.enemyType = enemy1;
+    }
+    if (this.enemyType == 1){
+      this.speed = 0.5;
+    }
+    else{
+      this.speed = 0.75;
+    }
+    this.movement = this.speed;
     this.isSlowed = 0;
     this.slowTime = 0;
     if (this.enemyType == enemy1) {
